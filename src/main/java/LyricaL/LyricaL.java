@@ -1,22 +1,85 @@
 package LyricaL;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URI;
-import javax.swing.*;
+
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
+import org.apache.hc.core5.http.ParseException;
+
 import com.formdev.flatlaf.FlatDarkLaf;
+
 import io.github.cdimascio.dotenv.Dotenv;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.miscellaneous.CurrentlyPlaying;
 import se.michaelthelin.spotify.model_objects.specification.Track;
-import org.apache.hc.core5.http.ParseException;
 
+class Event {
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition condition = lock.newCondition();
+    private boolean isSet = false;
+
+    // Set the event
+    public void set() {
+        lock.lock();
+        try {
+            isSet = true;
+            condition.signalAll(); // Notify all waiting threads
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // Clear the event
+    public void clear() {
+        lock.lock();
+        try {
+            isSet = false;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // Wait until the event is set
+    public void waitEvent() throws InterruptedException {
+        lock.lock();
+        try {
+            while (!isSet) {
+                condition.await(); // Wait until signaled
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // Check if the event is set
+    public boolean isSet() {
+        lock.lock();
+        try {
+            return isSet;
+        } finally {
+            lock.unlock();
+        }
+    }
+}
 public class LyricaL {
     private static final String TOKEN_FILE = "spotify_tokens.txt";
-
+    public static String track_id, artist, song_title, line = "";
+    public static int current_progress = 0;
+    public static Event event = new Event();
     public static void main(String[] args) {
-        String track_id, artist,song_title,line,status = "";
-        int current_progress = 0;
+        //String track_id, artist,song_title,line,status = "";
+        //int current_progress = 0;
         FlatDarkLaf.setup();
         JFrame frame = new JFrame("LyricaL");
         frame.setSize(400, 300);
@@ -48,14 +111,29 @@ public class LyricaL {
             }
 
             // Start a thread to check currently playing track
-            Thread thread = new Thread(() -> getCurrentlyPlayingTrack(spotifyApi));
+            Thread thread = new Thread(() -> monitor_song(spotifyApi));
             thread.start();
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             e.printStackTrace();
         }
     }
-    private static void monitor_song() {
+    private static void monitor_song(SpotifyApi spotifyApi) {
+        String current_track_id = null;
+        while(true){
+            try {
+                getCurrentlyPlayingTrack(spotifyApi);
+                if(track_id != current_track_id){
+                    current_track_id = track_id;
+                    event.set();
+                }
+                Thread.sleep(10000);
+            } catch (Exception e) {
+                System.out.println("There was an error in getting song information.");
+            }
+            
+        }
+        
 
     }
 
@@ -113,6 +191,15 @@ public class LyricaL {
                 Track track = (Track) currentlyPlaying.getItem();
                 String artistName = track.getArtists()[0].getName();
                 String trackName = track.getName();
+                String trackID = track.getId();
+                int progress_ms = currentlyPlaying.getProgress_ms();
+                int progress_sec = Math.floorDiv(progress_ms, 1000);
+                int progress_min = Math.floorDiv(progress_sec,60);
+                progress_sec %= 60;
+                artist = artistName;
+                song_title = trackName;
+                track_id = trackID;
+                current_progress = progress_min*60+progress_sec;
                 System.out.println("Currently playing: " + trackName + " by " + artistName);
                 JOptionPane.showMessageDialog(null, "Currently playing: " + trackName + " by " + artistName);
             } else {
