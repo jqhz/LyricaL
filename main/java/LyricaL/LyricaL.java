@@ -15,6 +15,8 @@ public class LyricaL {
     private static final String TOKEN_FILE = "spotify_tokens.txt";
 
     public static void main(String[] args) {
+        String track_id, artist,song_title,line,status = "";
+        int current_progress = 0;
         FlatDarkLaf.setup();
         JFrame frame = new JFrame("LyricaL");
         frame.setSize(400, 300);
@@ -53,7 +55,21 @@ public class LyricaL {
             e.printStackTrace();
         }
     }
+    private static void monitor_song() {
 
+    }
+
+    private static void update_display() {
+
+    }
+
+    private static void fetch_lyrics() {
+
+    }
+
+    private static void update_overlay_text() {
+
+    }
     private static void authenticateUser(SpotifyApi spotifyApi) throws IOException, SpotifyWebApiException, ParseException {
         String authorizationUrl = spotifyApi.authorizationCodeUri()
                 .scope("user-read-currently-playing")
