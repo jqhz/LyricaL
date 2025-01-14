@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // FlatLaf for Swing UI
+    implementation 'com.formdev:flatlaf:3.5.4'
+
+    // Dotenv for environment variables
+    implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+
+    // Spotify Web API wrapper
+    implementation 'se.michaelthelin.spotify:spotify-web-api-java:9.1.1'
+
+    // Apache HTTP components (dependency for Spotify Web API wrapper)
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.1'
+    implementation 'org.apache.httpcomponents.core5:httpcore5:5.3.1'
+}
