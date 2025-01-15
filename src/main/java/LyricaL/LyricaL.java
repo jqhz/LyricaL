@@ -22,7 +22,7 @@ import javax.swing.SwingConstants;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
-import org.apache.hc.client5.http.impl.TunnelRefusedException;
+//import org.apache.hc.client5.http.impl.TunnelRefusedException;
 import org.apache.hc.core5.http.ParseException;
 
 import com.formdev.flatlaf.FlatDarkLaf;
@@ -32,6 +32,10 @@ import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.miscellaneous.CurrentlyPlaying;
 import se.michaelthelin.spotify.model_objects.specification.Track;
+
+import py4j.ClientServer;
+import py4j.Py4JException;
+import py4j.GatewayServer;
 
 class Event {
     private final ReentrantLock lock = new ReentrantLock();
@@ -85,7 +89,11 @@ public class LyricaL {
     private static final String TOKEN_FILE = "spotify_tokens.txt";
     public static String track_id, artist, song_title, line = "";
     public static int current_progress = 0;
-    public static Event event = new Event();
+    public static Event song_change_event = new Event();
+    public static Event line_set_event = new Event();
+    public static ClientServer clientServer = new ClientServer(null);
+    public static Synced_Lyrics fetcher = (Synced_Lyrics) clientServer.getPythonServerEntryPoint(new Class[] { Synced_Lyrics.class });
+
     public static void main(String[] args) {
         //String track_id, artist,song_title,line,status = "";
         //int current_progress = 0;
@@ -147,7 +155,8 @@ public class LyricaL {
             // Start a thread to check currently playing track
             Thread thread = new Thread(() -> monitor_song(spotifyApi,textArea));
             thread.start();
-
+            Thread thread2 = new Thread(() -> update_display());
+            thread2.start();
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             e.printStackTrace();
         }
@@ -159,7 +168,7 @@ public class LyricaL {
                 getCurrentlyPlayingTrack(spotifyApi, textArea);
                 if(track_id !=null && !track_id.equals(current_track_id)){
                     current_track_id = track_id;
-                    event.set();
+                    song_change_event.set();
                 }
                 Thread.sleep(10000);
             } catch (Exception e) {
@@ -173,11 +182,38 @@ public class LyricaL {
     }
 
     private static void update_display() {
+        while(true){
+            try{
+                fetch_lyrics();
+                if(track_id.equals("None")){
+                    continue;
+                } 
+                else {
+                    update_overlay_text();
+                }
+            } catch(Exception e){
 
+            }
+        }
     }
-
-    private static void fetch_lyrics() {
-
+    public interface Synced_Lyrics{
+        String lyrics_search(String track_name, String artist);
+    }
+    private static void fetch_lyrics() throws InterruptedException {
+        if(!song_change_event.isSet()){
+            return;
+        }
+        //song_change_event.waitEvent();
+        song_change_event.clear();
+        System.out.println("HELLO I CHANGED SONGS YYIPEEEEEEE");
+        
+        try{
+            String lyrics = fetcher.lyrics_search(song_title,artist);
+            System.out.println(lyrics);
+        }catch (Py4JException e){
+            e.printStackTrace();
+        }
+    
     }
 
     private static void update_overlay_text() {
