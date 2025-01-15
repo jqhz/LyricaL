@@ -98,7 +98,7 @@ public class LyricaL {
         JLabel textArea = new JLabel();
         //frame.add(textArea);
         //textArea.setEditable(false);
-        textArea.setFont(new Font("Univers",Font.PLAIN,12));
+        textArea.setFont(new Font("Univers",Font.BOLD,12));
         //textArea.setLineWrap(true);
         //textArea.setWrapStyleWord(true);
         textArea.setHorizontalAlignment(SwingConstants.CENTER);
@@ -111,7 +111,7 @@ public class LyricaL {
                 int frameHeight = frame.getHeight();
 
                 int newFontSize = Math.min(frameWidth/20,frameHeight/20);
-                textArea.setFont(new Font("Univers",Font.PLAIN,newFontSize));
+                textArea.setFont(new Font("Univers",Font.BOLD,newFontSize));
 
             }
         });
