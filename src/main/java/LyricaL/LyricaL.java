@@ -11,9 +11,18 @@ import java.net.URI;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import java.awt.*;
+
+import javax.swing.JLabel;
+//import javax.swing.JTextArea;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+//import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
+import org.apache.hc.client5.http.impl.TunnelRefusedException;
 import org.apache.hc.core5.http.ParseException;
 
 import com.formdev.flatlaf.FlatDarkLaf;
@@ -84,6 +93,31 @@ public class LyricaL {
         JFrame frame = new JFrame("LyricaL");
         frame.setSize(400, 300);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+        
+        JLabel textArea = new JLabel();
+        //frame.add(textArea);
+        //textArea.setEditable(false);
+        textArea.setFont(new Font("Univers",Font.PLAIN,12));
+        //textArea.setLineWrap(true);
+        //textArea.setWrapStyleWord(true);
+        textArea.setHorizontalAlignment(SwingConstants.CENTER);
+        textArea.setVerticalAlignment(SwingConstants.CENTER);
+        //JScrollPane scrollPane = new JScrollPane(textArea);
+        frame.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e){
+                int frameWidth = frame.getWidth();
+                int frameHeight = frame.getHeight();
+
+                int newFontSize = Math.min(frameWidth/20,frameHeight/20);
+                textArea.setFont(new Font("Univers",Font.PLAIN,newFontSize));
+
+            }
+        });
+        
+        frame.add(textArea);
+        //frame.getContentPane().add(scrollPane, BorderLayout.CENTER); // Add scrollPane to center
         frame.setVisible(true);
 
         Dotenv dotenv = Dotenv.load();
@@ -111,25 +145,26 @@ public class LyricaL {
             }
 
             // Start a thread to check currently playing track
-            Thread thread = new Thread(() -> monitor_song(spotifyApi));
+            Thread thread = new Thread(() -> monitor_song(spotifyApi,textArea));
             thread.start();
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             e.printStackTrace();
         }
     }
-    private static void monitor_song(SpotifyApi spotifyApi) {
+    private static void monitor_song(SpotifyApi spotifyApi, JLabel textArea) {
         String current_track_id = null;
         while(true){
             try {
-                getCurrentlyPlayingTrack(spotifyApi);
-                if(track_id != current_track_id){
+                getCurrentlyPlayingTrack(spotifyApi, textArea);
+                if(track_id !=null && !track_id.equals(current_track_id)){
                     current_track_id = track_id;
                     event.set();
                 }
                 Thread.sleep(10000);
             } catch (Exception e) {
                 System.out.println("There was an error in getting song information.");
+                e.printStackTrace();
             }
             
         }
@@ -181,7 +216,7 @@ public class LyricaL {
         }
     }
 
-    private static void getCurrentlyPlayingTrack(SpotifyApi spotifyApi) {
+    private static void getCurrentlyPlayingTrack(SpotifyApi spotifyApi, JLabel textArea) {
         try {
             CurrentlyPlaying currentlyPlaying = spotifyApi.getUsersCurrentlyPlayingTrack()
                     .build()
@@ -201,10 +236,16 @@ public class LyricaL {
                 track_id = trackID;
                 current_progress = progress_min*60+progress_sec;
                 System.out.println("Currently playing: " + trackName + " by " + artistName);
-                JOptionPane.showMessageDialog(null, "Currently playing: " + trackName + " by " + artistName);
+                //JOptionPane.showMessageDialog(null, "Currently playing: " + trackName + " by " + artistName);
+                textArea.setText("Currently playing: " + trackName + " by " + artistName);
             } else {
                 System.out.println("Currently playing item is not a track.");
-                JOptionPane.showMessageDialog(null, "Currently playing item is not a track.");
+                artist = "None";
+                song_title = "None";
+                track_id = "None";
+                current_progress = 0;
+                //JOptionPane.showMessageDialog(null, "Currently playing item is not a track.");
+                textArea.setText("Currently playing item is not a track.");
             }
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             e.printStackTrace();
