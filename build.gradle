@@ -20,4 +20,6 @@ dependencies {
     // Apache HTTP components (dependency for Spotify Web API wrapper)
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.1'
     implementation 'org.apache.httpcomponents.core5:httpcore5:5.3.1'
+    implementation 'net.sf.py4j:py4j:0.10.9.9'
+
 }
