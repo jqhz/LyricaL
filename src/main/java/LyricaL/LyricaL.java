@@ -8,7 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-
+import java.util.ArrayList;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -31,11 +31,14 @@ import org.apache.hc.core5.http.ParseException;
 import com.formdev.flatlaf.FlatDarkLaf;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import kotlin.jvm.Throws;
+//import kotlin.jvm.Throws;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.miscellaneous.CurrentlyPlaying;
 import se.michaelthelin.spotify.model_objects.specification.Track;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import py4j.ClientServer;
 import py4j.Py4JException;
@@ -213,6 +216,18 @@ public class LyricaL {
             }
         }
     }
+    public static class TimeStampedLine{
+        double timestamp;
+        String lyricsa;
+        public TimeStampedLine(double timestamp,String lyricsa){
+            this.timestamp = timestamp;
+            this.lyricsa = lyricsa;
+        }
+        @Override
+        public String toString() {
+            return "Timestamp: " + timestamp + " | Lyrics: " + lyricsa;
+        }
+    }
     public interface Synced_Lyrics{
         String lyrics_search(String track_name, String artist);
     }
@@ -228,7 +243,49 @@ public class LyricaL {
         try{
             String lyrics = fetcher.lyrics_search(song_title,artist);
             System.out.println(lyrics);
-            
+            System.out.println();
+            ArrayList<TimeStampedLine> lines = new ArrayList<TimeStampedLine>();
+            String linePattern = "\\[(\\d{2}:\\d{2}\\.\\d{2})](.*)";
+            Pattern pattern = Pattern.compile(linePattern);
+            Matcher matcher = pattern.matcher(lyrics);
+
+            // Iterate through each match
+            while (matcher.find()) {
+                String mainTimestamp = matcher.group(1);
+                String rawLine = matcher.group(2);  // The line with words between timestamps
+
+                // Extract words from the line (after the < > tags)
+                String wordPattern = "<\\d{2}:\\d{2}\\.\\d{2}>\\s*([\\w',?!.]+)";
+                Pattern wordPatternObj = Pattern.compile(wordPattern);
+                Matcher wordMatcher = wordPatternObj.matcher(rawLine);
+                StringBuilder sb = new StringBuilder();
+
+                // Collect all words in the line
+                while (wordMatcher.find()) {
+                    sb.append(wordMatcher.group(1)).append(" ");
+                }
+
+                String words;
+                if (sb.length()>0){
+                    words= sb.toString().trim();
+                }else{
+                    words=rawLine;
+                }
+                
+                // Convert main timestamp to seconds
+                String[] parts = mainTimestamp.split(":");
+                double minutes = Double.parseDouble(parts[0]);
+                double seconds = Double.parseDouble(parts[1]);
+                double timestampInSeconds= Math.round((minutes * 60 + seconds)*100.0)/100.0;
+                //double timestampInSeconds = convertTimestampToSeconds(mainTimestamp);
+
+                // Add the timestamped lyrics to the list
+                
+                lines.add(new TimeStampedLine(timestampInSeconds, words));
+            }
+            for (TimeStampedLine linez : lines) {
+                System.out.println(linez);
+            }
         }catch (Py4JException e){
             e.printStackTrace();
         } finally {
