@@ -101,7 +101,19 @@ public class LyricaL {
     public static Event lyrics_fetch_event = new Event();
     public static ClientServer clientServer = new ClientServer(null);
     public static final Synced_Lyrics fetcher = (Synced_Lyrics) clientServer.getPythonServerEntryPoint(new Class[] { Synced_Lyrics.class });
-
+    public static class TimeStampedLine{
+        double timestamp;
+        String lyricsa;
+        public TimeStampedLine(double timestamp,String lyricsa){
+            this.timestamp = timestamp;
+            this.lyricsa = lyricsa;
+        }
+        @Override
+        public String toString() {
+            return "Timestamp: " + timestamp + " | Lyrics: " + lyricsa;
+        }
+    }
+    public static ArrayList<TimeStampedLine> lines = new ArrayList<TimeStampedLine>();
     public static void main(String[] args) throws InterruptedException {
         //String track_id, artist,song_title,line,status = "";
         //int current_progress = 0;
@@ -165,6 +177,15 @@ public class LyricaL {
             thread.start();
             Thread thread2 = new Thread(() -> update_display());
             thread2.start();
+            Thread thread3 = new Thread(() -> {
+                try {
+                    main_loop(textArea);
+                } catch (InterruptedException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+            });
+            thread3.start();
             ProcessBuilder processBuilder = new ProcessBuilder("py","lyrics_server.py");
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
@@ -178,6 +199,14 @@ public class LyricaL {
             e.printStackTrace();
         }
     }
+    private static void main_loop(JLabel textArea) throws InterruptedException {
+        while(true){
+            line_set_event.waitEvent();
+            textArea.setText(line);
+            line_set_event.clear();
+
+        }
+    }
     private static void monitor_song(SpotifyApi spotifyApi, JLabel textArea) {
         String current_track_id = null;
         while(true){
@@ -187,7 +216,7 @@ public class LyricaL {
                     current_track_id = track_id;
                     song_change_event.set();
                 }
-                Thread.sleep(10000);
+                Thread.sleep(100);
             } catch (Exception e) {
                 System.out.println("There was an error in getting song information.");
                 e.printStackTrace();
@@ -216,18 +245,7 @@ public class LyricaL {
             }
         }
     }
-    public static class TimeStampedLine{
-        double timestamp;
-        String lyricsa;
-        public TimeStampedLine(double timestamp,String lyricsa){
-            this.timestamp = timestamp;
-            this.lyricsa = lyricsa;
-        }
-        @Override
-        public String toString() {
-            return "Timestamp: " + timestamp + " | Lyrics: " + lyricsa;
-        }
-    }
+    
     public interface Synced_Lyrics{
         String lyrics_search(String track_name, String artist);
     }
@@ -242,9 +260,9 @@ public class LyricaL {
         
         try{
             String lyrics = fetcher.lyrics_search(song_title,artist);
-            System.out.println(lyrics);
-            System.out.println();
-            ArrayList<TimeStampedLine> lines = new ArrayList<TimeStampedLine>();
+            //System.out.println(lyrics);
+            //System.out.println();
+            
             String linePattern = "\\[(\\d{2}:\\d{2}\\.\\d{2})](.*)";
             Pattern pattern = Pattern.compile(linePattern);
             Matcher matcher = pattern.matcher(lyrics);
@@ -283,9 +301,9 @@ public class LyricaL {
                 
                 lines.add(new TimeStampedLine(timestampInSeconds, words));
             }
-            for (TimeStampedLine linez : lines) {
+            /*for (TimeStampedLine linez : lines) {
                 System.out.println(linez);
-            }
+            }*/
         }catch (Py4JException e){
             e.printStackTrace();
         } finally {
@@ -295,7 +313,20 @@ public class LyricaL {
     }
 
     private static void update_overlay_text() {
-
+        TimeStampedLine nearestLine = null;
+        for(TimeStampedLine tsl : lines){
+            if(tsl.timestamp <= current_progress){
+                if(nearestLine == null || tsl.timestamp > nearestLine.timestamp){
+                    nearestLine = tsl;
+                }
+            }
+        }
+        if(nearestLine!=null){
+            line= nearestLine.lyricsa;
+        }else{
+            line = lines.isEmpty() ? "" : lines.get(0).lyricsa;
+        }
+        line_set_event.set();
     }
     private static void authenticateUser(SpotifyApi spotifyApi) throws IOException, SpotifyWebApiException, ParseException {
         String authorizationUrl = spotifyApi.authorizationCodeUri()
