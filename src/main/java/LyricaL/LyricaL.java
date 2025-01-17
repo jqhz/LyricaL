@@ -8,38 +8,32 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-
+import java.util.ArrayList;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import java.awt.*;
-
 import javax.swing.JLabel;
-//import javax.swing.JTextArea;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-//import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
-
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-
-//import org.apache.hc.client5.http.impl.TunnelRefusedException;
 
 import org.apache.hc.core5.http.ParseException;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import kotlin.jvm.Throws;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.miscellaneous.CurrentlyPlaying;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import py4j.ClientServer;
 import py4j.Py4JException;
-import py4j.GatewayServer;
+import java.awt.event.*;
 
 class Event {
     private final ReentrantLock lock = new ReentrantLock();
@@ -98,12 +92,26 @@ public class LyricaL {
     public static Event lyrics_fetch_event = new Event();
     public static ClientServer clientServer = new ClientServer(null);
     public static final Synced_Lyrics fetcher = (Synced_Lyrics) clientServer.getPythonServerEntryPoint(new Class[] { Synced_Lyrics.class });
-
+    public static class TimeStampedLine{
+        double timestamp;
+        String lyricsa;
+        public TimeStampedLine(double timestamp,String lyricsa){
+            this.timestamp = timestamp;
+            this.lyricsa = lyricsa;
+        }
+        @Override
+        public String toString() {
+            return "Timestamp: " + timestamp + " | Lyrics: " + lyricsa;
+        }
+    }
+    public static ArrayList<TimeStampedLine> lines = new ArrayList<TimeStampedLine>();
     public static void main(String[] args) throws InterruptedException {
         //String track_id, artist,song_title,line,status = "";
         //int current_progress = 0;
         FlatDarkLaf.setup();
         JFrame frame = new JFrame("LyricaL");
+        frame.setUndecorated(true);
+        frame.setOpacity(0.8f);
         frame.setSize(400, 300);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
@@ -128,8 +136,34 @@ public class LyricaL {
 
             }
         });
-        
+        Point dragPoint = new Point();
+        frame.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                //dragPoint.setLocation(e.getPoint());
+                //dragPoint[0] = e.getPoint(); // Record the mouse position when pressed\
+                //getPoint(e);
+                dragPoint.setLocation(e.getPoint());
+            }
+        });
+
+        frame.addMouseMotionListener(new MouseMotionAdapter() {
+            public void mouseDragged(MouseEvent e) {
+                if (dragPoint != null) {
+                    Point currentScreenLocation = e.getLocationOnScreen();
+                    frame.setLocation(currentScreenLocation.x - dragPoint.x,
+                            currentScreenLocation.y - dragPoint.y);
+                }
+            }
+        });
+        frame.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    System.exit(0);
+                }
+            }
+        });
         frame.add(textArea);
+        
         //frame.getContentPane().add(scrollPane, BorderLayout.CENTER); // Add scrollPane to center
         frame.setVisible(true);
 
@@ -162,6 +196,15 @@ public class LyricaL {
             thread.start();
             Thread thread2 = new Thread(() -> update_display());
             thread2.start();
+            Thread thread3 = new Thread(() -> {
+                try {
+                    main_loop(textArea);
+                } catch (InterruptedException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+            });
+            thread3.start();
             ProcessBuilder processBuilder = new ProcessBuilder("py","lyrics_server.py");
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
@@ -175,6 +218,14 @@ public class LyricaL {
             e.printStackTrace();
         }
     }
+    private static void main_loop(JLabel textArea) throws InterruptedException {
+        while(true){
+            line_set_event.waitEvent();
+            textArea.setText(line);
+            line_set_event.clear();
+
+        }
+    }
     private static void monitor_song(SpotifyApi spotifyApi, JLabel textArea) {
         String current_track_id = null;
         while(true){
@@ -184,7 +235,7 @@ public class LyricaL {
                     current_track_id = track_id;
                     song_change_event.set();
                 }
-                Thread.sleep(10000);
+                Thread.sleep(100);
             } catch (Exception e) {
                 System.out.println("There was an error in getting song information.");
                 e.printStackTrace();
@@ -213,6 +264,7 @@ public class LyricaL {
             }
         }
     }
+    
     public interface Synced_Lyrics{
         String lyrics_search(String track_name, String artist);
     }
@@ -227,8 +279,50 @@ public class LyricaL {
         
         try{
             String lyrics = fetcher.lyrics_search(song_title,artist);
-            System.out.println(lyrics);
+            //System.out.println(lyrics);
+            //System.out.println();
             
+            String linePattern = "\\[(\\d{2}:\\d{2}\\.\\d{2})](.*)";
+            Pattern pattern = Pattern.compile(linePattern);
+            Matcher matcher = pattern.matcher(lyrics);
+
+            // Iterate through each match
+            while (matcher.find()) {
+                String mainTimestamp = matcher.group(1);
+                String rawLine = matcher.group(2);  // The line with words between timestamps
+
+                // Extract words from the line (after the < > tags)
+                String wordPattern = "<\\d{2}:\\d{2}\\.\\d{2}>\\s*([\\w',?!.]+)";
+                Pattern wordPatternObj = Pattern.compile(wordPattern);
+                Matcher wordMatcher = wordPatternObj.matcher(rawLine);
+                StringBuilder sb = new StringBuilder();
+
+                // Collect all words in the line
+                while (wordMatcher.find()) {
+                    sb.append(wordMatcher.group(1)).append(" ");
+                }
+
+                String words;
+                if (sb.length()>0){
+                    words= sb.toString().trim();
+                }else{
+                    words=rawLine;
+                }
+                
+                // Convert main timestamp to seconds
+                String[] parts = mainTimestamp.split(":");
+                double minutes = Double.parseDouble(parts[0]);
+                double seconds = Double.parseDouble(parts[1]);
+                double timestampInSeconds= Math.round((minutes * 60 + seconds)*100.0)/100.0;
+                //double timestampInSeconds = convertTimestampToSeconds(mainTimestamp);
+
+                // Add the timestamped lyrics to the list
+                
+                lines.add(new TimeStampedLine(timestampInSeconds, words));
+            }
+            /*for (TimeStampedLine linez : lines) {
+                System.out.println(linez);
+            }*/
         }catch (Py4JException e){
             e.printStackTrace();
         } finally {
@@ -238,7 +332,20 @@ public class LyricaL {
     }
 
     private static void update_overlay_text() {
-
+        TimeStampedLine nearestLine = null;
+        for(TimeStampedLine tsl : lines){
+            if(tsl.timestamp <= current_progress){
+                if(nearestLine == null || tsl.timestamp > nearestLine.timestamp){
+                    nearestLine = tsl;
+                }
+            }
+        }
+        if(nearestLine!=null){
+            line= nearestLine.lyricsa;
+        }else{
+            line = lines.isEmpty() ? "" : lines.get(0).lyricsa;
+        }
+        line_set_event.set();
     }
     private static void authenticateUser(SpotifyApi spotifyApi) throws IOException, SpotifyWebApiException, ParseException {
         String authorizationUrl = spotifyApi.authorizationCodeUri()
