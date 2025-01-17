@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 
 import java.util.concurrent.locks.Condition;
@@ -19,15 +20,18 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 //import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
+
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
 //import org.apache.hc.client5.http.impl.TunnelRefusedException;
+
 import org.apache.hc.core5.http.ParseException;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import kotlin.jvm.Throws;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.miscellaneous.CurrentlyPlaying;
@@ -91,10 +95,11 @@ public class LyricaL {
     public static int current_progress = 0;
     public static Event song_change_event = new Event();
     public static Event line_set_event = new Event();
+    public static Event lyrics_fetch_event = new Event();
     public static ClientServer clientServer = new ClientServer(null);
-    public static Synced_Lyrics fetcher = (Synced_Lyrics) clientServer.getPythonServerEntryPoint(new Class[] { Synced_Lyrics.class });
+    public static final Synced_Lyrics fetcher = (Synced_Lyrics) clientServer.getPythonServerEntryPoint(new Class[] { Synced_Lyrics.class });
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         //String track_id, artist,song_title,line,status = "";
         //int current_progress = 0;
         FlatDarkLaf.setup();
@@ -157,6 +162,15 @@ public class LyricaL {
             thread.start();
             Thread thread2 = new Thread(() -> update_display());
             thread2.start();
+            ProcessBuilder processBuilder = new ProcessBuilder("py","lyrics_server.py");
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String linez;
+            while ((linez = reader.readLine()) != null) {
+                System.out.println(linez);
+            }
+            //process.waitFor();
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             e.printStackTrace();
         }
@@ -166,7 +180,7 @@ public class LyricaL {
         while(true){
             try {
                 getCurrentlyPlayingTrack(spotifyApi, textArea);
-                if(track_id !=null && !track_id.equals(current_track_id)){
+                if(track_id !=null && !track_id.equals("None") && !track_id.equals(current_track_id)){
                     current_track_id = track_id;
                     song_change_event.set();
                 }
@@ -184,9 +198,12 @@ public class LyricaL {
     private static void update_display() {
         while(true){
             try{
+                if(lyrics_fetch_event.isSet()){
+                    continue;
+                }
                 fetch_lyrics();
                 if(track_id.equals("None")){
-                    continue;
+                
                 } 
                 else {
                     update_overlay_text();
@@ -200,20 +217,24 @@ public class LyricaL {
         String lyrics_search(String track_name, String artist);
     }
     private static void fetch_lyrics() throws InterruptedException {
-        if(!song_change_event.isSet()){
+        if(!song_change_event.isSet() || track_id.equals("None")){
             return;
         }
         //song_change_event.waitEvent();
         song_change_event.clear();
+        lyrics_fetch_event.set();
         System.out.println("HELLO I CHANGED SONGS YYIPEEEEEEE");
         
         try{
             String lyrics = fetcher.lyrics_search(song_title,artist);
             System.out.println(lyrics);
+            
         }catch (Py4JException e){
             e.printStackTrace();
+        } finally {
+            lyrics_fetch_event.clear();
         }
-    
+        
     }
 
     private static void update_overlay_text() {
@@ -257,8 +278,8 @@ public class LyricaL {
             CurrentlyPlaying currentlyPlaying = spotifyApi.getUsersCurrentlyPlayingTrack()
                     .build()
                     .execute();
-
-            if (currentlyPlaying.getItem() instanceof Track) {
+            
+            if (currentlyPlaying!=null &&currentlyPlaying.getItem() instanceof Track) {
                 Track track = (Track) currentlyPlaying.getItem();
                 String artistName = track.getArtists()[0].getName();
                 String trackName = track.getName();
