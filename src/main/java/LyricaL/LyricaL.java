@@ -13,7 +13,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import java.awt.*;
-
+//import javax.swing.*;
 import javax.swing.JLabel;
 //import javax.swing.JTextArea;
 import javax.swing.JFrame;
@@ -21,12 +21,10 @@ import javax.swing.JOptionPane;
 //import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-
 //import org.apache.hc.client5.http.impl.TunnelRefusedException;
 
 import org.apache.hc.core5.http.ParseException;
+//import org.w3c.dom.events.MouseEvent;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 
@@ -42,7 +40,8 @@ import java.util.regex.Pattern;
 
 import py4j.ClientServer;
 import py4j.Py4JException;
-import py4j.GatewayServer;
+//import py4j.GatewayServer;
+import java.awt.event.*;
 
 class Event {
     private final ReentrantLock lock = new ReentrantLock();
@@ -119,6 +118,8 @@ public class LyricaL {
         //int current_progress = 0;
         FlatDarkLaf.setup();
         JFrame frame = new JFrame("LyricaL");
+        frame.setUndecorated(true);
+        frame.setOpacity(0.8f);
         frame.setSize(400, 300);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
@@ -143,8 +144,34 @@ public class LyricaL {
 
             }
         });
-        
+        Point dragPoint = new Point();
+        frame.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                //dragPoint.setLocation(e.getPoint());
+                //dragPoint[0] = e.getPoint(); // Record the mouse position when pressed\
+                //getPoint(e);
+                dragPoint.setLocation(e.getPoint());
+            }
+        });
+
+        frame.addMouseMotionListener(new MouseMotionAdapter() {
+            public void mouseDragged(MouseEvent e) {
+                if (dragPoint != null) {
+                    Point currentScreenLocation = e.getLocationOnScreen();
+                    frame.setLocation(currentScreenLocation.x - dragPoint.x,
+                            currentScreenLocation.y - dragPoint.y);
+                }
+            }
+        });
+        frame.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    System.exit(0);
+                }
+            }
+        });
         frame.add(textArea);
+        
         //frame.getContentPane().add(scrollPane, BorderLayout.CENTER); // Add scrollPane to center
         frame.setVisible(true);
 
