@@ -10,7 +10,7 @@ class Synced_Lyrics(object):
             return "No Lyrics Found"
 lyrics_fetcher = Synced_Lyrics()
 gateway = ClientServer(
-    java_parameters=JavaParameters(),
-    python_parameters=PythonParameters(),
+    java_parameters=JavaParameters(port=0),
+    python_parameters=PythonParameters(port=0),
     python_server_entry_point=lyrics_fetcher
 )
