@@ -13,23 +13,16 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import java.awt.*;
-//import javax.swing.*;
 import javax.swing.JLabel;
-//import javax.swing.JTextArea;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-//import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
-//import org.apache.hc.client5.http.impl.TunnelRefusedException;
-
 import org.apache.hc.core5.http.ParseException;
-//import org.w3c.dom.events.MouseEvent;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 
 import io.github.cdimascio.dotenv.Dotenv;
-//import kotlin.jvm.Throws;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.miscellaneous.CurrentlyPlaying;
@@ -40,7 +33,6 @@ import java.util.regex.Pattern;
 
 import py4j.ClientServer;
 import py4j.Py4JException;
-//import py4j.GatewayServer;
 import java.awt.event.*;
 
 class Event {
