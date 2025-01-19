@@ -275,6 +275,7 @@ public class LyricaL {
         //song_change_event.waitEvent();
         song_change_event.clear();
         lyrics_fetch_event.set();
+        lines.clear();
         System.out.println("HELLO I CHANGED SONGS YYIPEEEEEEE");
         
         try{
@@ -334,7 +335,7 @@ public class LyricaL {
     private static void update_overlay_text() {
         TimeStampedLine nearestLine = null;
         for(TimeStampedLine tsl : lines){
-            if(tsl.timestamp <= current_progress){
+            if(tsl.timestamp <= current_progress+.6){
                 if(nearestLine == null || tsl.timestamp > nearestLine.timestamp){
                     nearestLine = tsl;
                 }
