@@ -14,3 +14,11 @@ gateway = ClientServer(
     python_parameters=PythonParameters(port=0),
     python_server_entry_point=lyrics_fetcher
 )
+java_port - gateway.java_parameters.address[1]
+python_port = gateway.python_parameters.address[1]
+try:
+    gateway.start()
+except KeyboardInterrupt:
+    print("SHUTDOWN")
+finally:
+    gateway.shutdown()
