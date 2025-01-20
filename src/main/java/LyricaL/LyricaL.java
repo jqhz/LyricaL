@@ -115,7 +115,7 @@ public class LyricaL {
         frame.setSize(400, 300);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
-        
+        frame.setAlwaysOnTop(true);
         JLabel textArea = new JLabel();
         //frame.add(textArea);
         //textArea.setEditable(false);
