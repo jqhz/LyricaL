@@ -14,9 +14,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import java.awt.*;
 import javax.swing.JLabel;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 
 import org.apache.hc.core5.http.ParseException;
 
@@ -34,6 +37,7 @@ import java.util.regex.Pattern;
 import py4j.ClientServer;
 import py4j.Py4JException;
 import java.awt.event.*;
+import java.net.URL;
 
 class Event {
     private final ReentrantLock lock = new ReentrantLock();
@@ -115,7 +119,42 @@ public class LyricaL {
         frame.setSize(400, 300);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
+        frame.setAlwaysOnTop(true);
+        JPanel titleBar = new JPanel();
+        titleBar.setBackground(Color.DARK_GRAY);
+        titleBar.setLayout(new FlowLayout(FlowLayout.RIGHT,5,5));
+        URL minimizeIconURL = LyricaL.class.getResource("/minimize_icon.png");
+        URL closeIconURL = LyricaL.class.getResource("/exit_icon.png");
+        System.out.println(minimizeIconURL);
+        System.out.println(closeIconURL);
+        if (minimizeIconURL == null || closeIconURL == null) {
+            System.err.println("Resource files not found. Ensure minimize_icon.png and exit_icon.png are in the correct directory.");
+            System.exit(1);
+        }
+        ImageIcon minimizeIcon = new ImageIcon(minimizeIconURL);
+        ImageIcon closeIcon = new ImageIcon(closeIconURL);
+        JLabel minimizeLabel = new JLabel(minimizeIcon);
+        minimizeLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        minimizeLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                frame.setState(Frame.ICONIFIED); // Minimize the frame
+            }
+        });
+
+        // Create the close button
         
+        JLabel closeLabel = new JLabel(closeIcon);
+        closeLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        closeLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                System.exit(0); // Close the application
+            }
+        });
+        titleBar.add(minimizeLabel);
+        titleBar.add(closeLabel);
+
         JLabel textArea = new JLabel();
         //frame.add(textArea);
         //textArea.setEditable(false);
@@ -162,6 +201,8 @@ public class LyricaL {
                 }
             }
         });
+        frame.add(titleBar,BorderLayout.NORTH);
+        
         frame.add(textArea);
         
         //frame.getContentPane().add(scrollPane, BorderLayout.CENTER); // Add scrollPane to center
