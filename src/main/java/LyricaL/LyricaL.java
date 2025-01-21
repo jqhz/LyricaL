@@ -29,6 +29,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.miscellaneous.CurrentlyPlaying;
+import se.michaelthelin.spotify.model_objects.specification.Image;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 
 import java.util.regex.Matcher;
@@ -125,14 +126,17 @@ public class LyricaL {
         titleBar.setLayout(new FlowLayout(FlowLayout.RIGHT,5,5));
         URL minimizeIconURL = LyricaL.class.getResource("/minimize_icon.png");
         URL closeIconURL = LyricaL.class.getResource("/exit_icon.png");
-        System.out.println(minimizeIconURL);
-        System.out.println(closeIconURL);
+        URL settingsIconURL = LyricaL.class.getResource("/settings_icon.png");
+        //System.out.println(minimizeIconURL);
+        //System.out.println(closeIconURL);
+        
         if (minimizeIconURL == null || closeIconURL == null) {
             System.err.println("Resource files not found. Ensure minimize_icon.png and exit_icon.png are in the correct directory.");
             System.exit(1);
         }
         ImageIcon minimizeIcon = new ImageIcon(minimizeIconURL);
         ImageIcon closeIcon = new ImageIcon(closeIconURL);
+        ImageIcon settingsIcon = new ImageIcon(settingsIconURL);
         JLabel minimizeLabel = new JLabel(minimizeIcon);
         minimizeLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         minimizeLabel.addMouseListener(new MouseAdapter() {
@@ -152,9 +156,18 @@ public class LyricaL {
                 System.exit(0); // Close the application
             }
         });
+        JLabel settingsLabel = new JLabel(settingsIcon);
+        settingsLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        settingsLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                frame.setState(Frame.ICONIFIED); // Minimize the frame
+            }
+        });
+        titleBar.add(settingsLabel);
         titleBar.add(minimizeLabel);
         titleBar.add(closeLabel);
-
+        
         JLabel textArea = new JLabel();
         //frame.add(textArea);
         //textArea.setEditable(false);
@@ -164,7 +177,7 @@ public class LyricaL {
         textArea.setHorizontalAlignment(SwingConstants.CENTER);
         textArea.setVerticalAlignment(SwingConstants.CENTER);
         //JScrollPane scrollPane = new JScrollPane(textArea);
-        frame.addComponentListener(new ComponentAdapter() {
+        /*frame.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e){
                 int frameWidth = frame.getWidth();
@@ -174,13 +187,10 @@ public class LyricaL {
                 textArea.setFont(new Font("Univers",Font.BOLD,newFontSize));
 
             }
-        });
+        });*/
         Point dragPoint = new Point();
         frame.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                //dragPoint.setLocation(e.getPoint());
-                //dragPoint[0] = e.getPoint(); // Record the mouse position when pressed\
-                //getPoint(e);
                 dragPoint.setLocation(e.getPoint());
             }
         });
@@ -202,7 +212,7 @@ public class LyricaL {
             }
         });
         frame.add(titleBar,BorderLayout.NORTH);
-        
+
         frame.add(textArea);
         
         //frame.getContentPane().add(scrollPane, BorderLayout.CENTER); // Add scrollPane to center
