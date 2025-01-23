@@ -11,15 +11,16 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-
+import java.util.Iterator;
 import java.awt.*;
+
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
-import javax.swing.border.Border;
+//import javax.swing.border.Border;
 
 import org.apache.hc.core5.http.ParseException;
 
@@ -29,7 +30,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.miscellaneous.CurrentlyPlaying;
-import se.michaelthelin.spotify.model_objects.specification.Image;
+//import se.michaelthelin.spotify.model_objects.specification.Image;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 
 import java.util.regex.Matcher;
@@ -37,8 +38,12 @@ import java.util.regex.Pattern;
 
 import py4j.ClientServer;
 import py4j.Py4JException;
+
 import java.awt.event.*;
 import java.net.URL;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 
 class Event {
     private final ReentrantLock lock = new ReentrantLock();
@@ -90,7 +95,7 @@ class Event {
 }
 public class LyricaL {
     private static final String TOKEN_FILE = "spotify_tokens.txt";
-    public static String track_id, artist, song_title, line = "";
+    public static String track_id, artist, song_title, line,linetwo = "";
     public static int current_progress = 0;
     public static Event song_change_event = new Event();
     public static Event line_set_event = new Event();
@@ -121,6 +126,8 @@ public class LyricaL {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
         frame.setAlwaysOnTop(true);
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel,BoxLayout.Y_AXIS));
         JPanel titleBar = new JPanel();
         titleBar.setBackground(Color.DARK_GRAY);
         titleBar.setLayout(new FlowLayout(FlowLayout.RIGHT,5,5));
@@ -158,10 +165,17 @@ public class LyricaL {
         });
         JLabel settingsLabel = new JLabel(settingsIcon);
         settingsLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        JFrame settingsFrame = new JFrame("Settings");
+        settingsFrame.setSize(400,300);
+        settingsFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        settingsFrame.setLayout(new BorderLayout());
+        settingsFrame.setLocationRelativeTo(null);
         settingsLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                frame.setState(Frame.ICONIFIED); // Minimize the frame
+                //frame.setState(Frame.ICONIFIED); // Minimize the frame
+                boolean isVisible = settingsFrame.isVisible();
+                settingsFrame.setVisible(!isVisible);
             }
         });
         titleBar.add(settingsLabel);
@@ -172,10 +186,21 @@ public class LyricaL {
         //frame.add(textArea);
         //textArea.setEditable(false);
         textArea.setFont(new Font("Univers",Font.BOLD,12));
-        //textArea.setLineWrap(true);
-        //textArea.setWrapStyleWord(true);
         textArea.setHorizontalAlignment(SwingConstants.CENTER);
-        textArea.setVerticalAlignment(SwingConstants.CENTER);
+        //textArea.setVerticalAlignment(SwingConstants.CENTER);
+        textArea.setAlignmentX(Component.CENTER_ALIGNMENT);
+        contentPanel.add(Box.createVerticalGlue());
+        contentPanel.add(textArea);
+        contentPanel.add(Box.createVerticalStrut(50));
+
+        JLabel secondText = new JLabel();
+        secondText.setHorizontalAlignment(SwingConstants.CENTER);
+        secondText.setAlignmentX(Component.CENTER_ALIGNMENT);
+        secondText.setFont(new Font("Univers",Font.BOLD,12));
+
+        contentPanel.add(secondText);
+        contentPanel.add(Box.createVerticalGlue());
+        //frame.add(content)
         //JScrollPane scrollPane = new JScrollPane(textArea);
         /*frame.addComponentListener(new ComponentAdapter() {
             @Override
@@ -213,11 +238,11 @@ public class LyricaL {
         });
         frame.add(titleBar,BorderLayout.NORTH);
 
-        frame.add(textArea);
-        
+        //frame.add(textArea);
+        frame.add(contentPanel,BorderLayout.CENTER);
         //frame.getContentPane().add(scrollPane, BorderLayout.CENTER); // Add scrollPane to center
         frame.setVisible(true);
-
+        
         Dotenv dotenv = Dotenv.load();
         String clientId = dotenv.get("CLIENT_ID");
         String clientSecret = dotenv.get("CLIENT_SECRET");
@@ -243,13 +268,13 @@ public class LyricaL {
             }
 
             // Start a thread to check currently playing track
-            Thread thread = new Thread(() -> monitor_song(spotifyApi,textArea));
+            Thread thread = new Thread(() -> monitor_song(spotifyApi,textArea,secondText));
             thread.start();
             Thread thread2 = new Thread(() -> update_display());
             thread2.start();
             Thread thread3 = new Thread(() -> {
                 try {
-                    main_loop(textArea);
+                    main_loop(textArea,secondText);
                 } catch (InterruptedException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
@@ -269,19 +294,20 @@ public class LyricaL {
             e.printStackTrace();
         }
     }
-    private static void main_loop(JLabel textArea) throws InterruptedException {
+    private static void main_loop(JLabel textArea,JLabel secondText) throws InterruptedException {
         while(true){
             line_set_event.waitEvent();
             textArea.setText(line);
+            secondText.setText(linetwo);
             line_set_event.clear();
 
         }
     }
-    private static void monitor_song(SpotifyApi spotifyApi, JLabel textArea) {
+    private static void monitor_song(SpotifyApi spotifyApi, JLabel textArea, JLabel secondText) {
         String current_track_id = null;
         while(true){
             try {
-                getCurrentlyPlayingTrack(spotifyApi, textArea);
+                getCurrentlyPlayingTrack(spotifyApi, textArea, secondText);
                 if(track_id !=null && !track_id.equals("None") && !track_id.equals(current_track_id)){
                     current_track_id = track_id;
                     song_change_event.set();
@@ -385,17 +411,39 @@ public class LyricaL {
 
     private static void update_overlay_text() {
         TimeStampedLine nearestLine = null;
-        for(TimeStampedLine tsl : lines){
+        TimeStampedLine secondNearest = null;
+        //Iterator<TimeStampedLine> it = lines.iterator();
+        /*while (it.hasNext()) {
+            TimeStampedLine i = it.next();
+            if(i.timestamp <= current_progress+.6){
+                if(nearestLine == null || i.timestamp > nearestLine.timestamp){
+                    nearestLine = i;
+                    secondNearest= it.next();
+                }
+            }
+        }*/
+        /*for(TimeStampedLine tsl : lines){
             if(tsl.timestamp <= current_progress+.6){
                 if(nearestLine == null || tsl.timestamp > nearestLine.timestamp){
                     nearestLine = tsl;
                 }
             }
+        }*/
+        for(int i=0;i<lines.size()-1;++i){
+            if(lines.get(i).timestamp <= current_progress+.6){
+                if(nearestLine == null || lines.get(i).timestamp > nearestLine.timestamp){
+                    nearestLine = lines.get(i);
+                    secondNearest = lines.get(i+1);
+                }
+            }
         }
-        if(nearestLine!=null){
+
+        if(nearestLine!=null && secondNearest!=null){
             line= nearestLine.lyricsa;
+            linetwo = secondNearest.lyricsa;
         }else{
             line = lines.isEmpty() ? "" : lines.get(0).lyricsa;
+            linetwo = "";
         }
         line_set_event.set();
     }
@@ -432,7 +480,7 @@ public class LyricaL {
         }
     }
 
-    private static void getCurrentlyPlayingTrack(SpotifyApi spotifyApi, JLabel textArea) {
+    private static void getCurrentlyPlayingTrack(SpotifyApi spotifyApi, JLabel textArea, JLabel secondText) {
         try {
             CurrentlyPlaying currentlyPlaying = spotifyApi.getUsersCurrentlyPlayingTrack()
                     .build()
@@ -462,6 +510,7 @@ public class LyricaL {
                 current_progress = 0;
                 //JOptionPane.showMessageDialog(null, "Currently playing item is not a track.");
                 textArea.setText("Currently playing item is not a track.");
+                secondText.setText("");
             }
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             e.printStackTrace();
