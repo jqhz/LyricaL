@@ -22,6 +22,9 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 //import javax.swing.border.Border;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.table.*;
+
 import org.apache.hc.core5.http.ParseException;
 
 import com.formdev.flatlaf.FlatDarkLaf;
@@ -133,6 +136,16 @@ public class LyricaL {
         tabbedPane.addTab("Themes",new JPanel());
         tabbedPane.addTab("Keybinds",new JPanel());
         tabbedPane.addTab("Language",new JPanel());
+        String[] columnNames = {"Action","Hotkey"};
+        Object[][] data = {
+            {"Toggle Window UI",""},
+            {"Toggle window visibility",""},
+            {"Lock",""},
+            {"Toggle Transparency",""}
+        };
+        DefaultTableModel model = new DefaultTableModel(data,columnNames);
+        JTable table = new JTable(model);
+        
         JPanel contentPanel = new JPanel();
         //contentPanel.setOpaque(false);
         contentPanel.setLayout(new BoxLayout(contentPanel,BoxLayout.Y_AXIS));
