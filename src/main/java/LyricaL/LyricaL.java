@@ -224,19 +224,7 @@ public class LyricaL {
 
         contentPanel.add(secondText);
         contentPanel.add(Box.createVerticalGlue());
-        //frame.add(content)
-        //JScrollPane scrollPane = new JScrollPane(textArea);
-        /*frame.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e){
-                int frameWidth = frame.getWidth();
-                int frameHeight = frame.getHeight();
-
-                int newFontSize = Math.min(frameWidth/20,frameHeight/20);
-                textArea.setFont(new Font("Univers",Font.BOLD,newFontSize));
-
-            }
-        });*/
+        
         Point dragPoint = new Point();
         frame.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -438,23 +426,7 @@ public class LyricaL {
     private static void update_overlay_text() {
         TimeStampedLine nearestLine = null;
         TimeStampedLine secondNearest = null;
-        //Iterator<TimeStampedLine> it = lines.iterator();
-        /*while (it.hasNext()) {
-            TimeStampedLine i = it.next();
-            if(i.timestamp <= current_progress+.6){
-                if(nearestLine == null || i.timestamp > nearestLine.timestamp){
-                    nearestLine = i;
-                    secondNearest= it.next();
-                }
-            }
-        }*/
-        /*for(TimeStampedLine tsl : lines){
-            if(tsl.timestamp <= current_progress+.6){
-                if(nearestLine == null || tsl.timestamp > nearestLine.timestamp){
-                    nearestLine = tsl;
-                }
-            }
-        }*/
+        
         for(int i=0;i<lines.size()-1;++i){
             if(lines.get(i).timestamp <= current_progress+.6){
                 if(nearestLine == null || lines.get(i).timestamp > nearestLine.timestamp){
