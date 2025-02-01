@@ -13,15 +13,21 @@ import javax.swing.SwingConstants;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.table.*;
+
+import org.w3c.dom.Text;
+
 import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import LyricaL.LyricaL;
 
 public class GUI {
+    private JFrame frame;
+    private JLabel textArea;
+    private JLabel secondText;
     public void Init_GUI() {
         FlatDarkLaf.setup();
-        JFrame frame = new JFrame("LyricaL");
+        frame = new JFrame("LyricaL");
         frame.setUndecorated(true);
         frame.setBackground(new Color(0, 0, 0, 0));
 
@@ -105,7 +111,7 @@ public class GUI {
         titleBar.add(minimizeLabel);
         titleBar.add(closeLabel);
         
-        JLabel textArea = new JLabel();
+        textArea = new JLabel();
         //frame.add(textArea);
         //textArea.setEditable(false);
         textArea.setFont(new Font("Univers",Font.BOLD,16));
@@ -116,7 +122,7 @@ public class GUI {
         contentPanel.add(textArea);
         contentPanel.add(Box.createVerticalStrut(50));
 
-        JLabel secondText = new JLabel();
+        secondText = new JLabel();
         secondText.setHorizontalAlignment(SwingConstants.CENTER);
         secondText.setAlignmentX(Component.CENTER_ALIGNMENT);
         secondText.setFont(new Font("Univers",Font.BOLD,16));
@@ -156,5 +162,11 @@ public class GUI {
         //frame.getContentPane().add(scrollPane, BorderLayout.CENTER); // Add scrollPane to center
         frame.setVisible(true);
         
+    }
+    public JLabel getTextArea(){
+        return textArea;
+    }
+    public JLabel getSecondText(){
+        return secondText;
     }
 }

@@ -150,13 +150,13 @@ public class LyricaL {
             }
 
             // Start a thread to check currently playing track
-            Thread thread = new Thread(() -> monitor_song(spotifyApi,textArea,secondText));
+            Thread thread = new Thread(() -> monitor_song(spotifyApi,guiyay.getTextArea(),guiyay.getSecondText()));
             thread.start();
             Thread thread2 = new Thread(() -> update_display());
             thread2.start();
             Thread thread3 = new Thread(() -> {
                 try {
-                    main_loop(textArea,secondText);
+                    main_loop(guiyay.getTextArea(),guiyay.getSecondText());
                 } catch (InterruptedException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
