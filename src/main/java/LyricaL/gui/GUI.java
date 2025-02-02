@@ -169,4 +169,10 @@ public class GUI {
     public JLabel getSecondText(){
         return secondText;
     }
+    public void setTextArea(String s){
+        textArea.setText(s);
+    }
+    public void setSecondText(String s){
+        secondText.setText(s);
+    }
 }

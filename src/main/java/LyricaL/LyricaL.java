@@ -98,6 +98,7 @@ class Event {
     }
 }
 public class LyricaL {
+    public static GUI guiyay;
     private static final String TOKEN_FILE = "spotify_tokens.txt";
     public static String track_id, artist, song_title, line,linetwo = "";
     public static int current_progress = 0;
@@ -119,10 +120,13 @@ public class LyricaL {
         }
     }
     public static ArrayList<TimeStampedLine> lines = new ArrayList<TimeStampedLine>();
+    public static GUI getGUI() {
+        return guiyay;
+    }
     public static void main(String[] args) throws InterruptedException {
         //String track_id, artist,song_title,line,status = "";
         //int current_progress = 0;
-        GUI guiyay = new GUI();
+        guiyay = new GUI();
         guiyay.Init_GUI();
         
         Dotenv dotenv = Dotenv.load();
@@ -150,13 +154,13 @@ public class LyricaL {
             }
 
             // Start a thread to check currently playing track
-            Thread thread = new Thread(() -> monitor_song(spotifyApi,guiyay.getTextArea(),guiyay.getSecondText()));
+            Thread thread = new Thread(() -> monitor_song(spotifyApi,guiyay));
             thread.start();
             Thread thread2 = new Thread(() -> update_display());
             thread2.start();
             Thread thread3 = new Thread(() -> {
                 try {
-                    main_loop(guiyay.getTextArea(),guiyay.getSecondText());
+                    main_loop(guiyay);
                 } catch (InterruptedException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
@@ -176,20 +180,20 @@ public class LyricaL {
             e.printStackTrace();
         }
     }
-    private static void main_loop(JLabel textArea,JLabel secondText) throws InterruptedException {
+    private static void main_loop(GUI aGUI) throws InterruptedException {
         while(true){
             line_set_event.waitEvent();
-            textArea.setText(line);
-            secondText.setText(linetwo);
+            aGUI.setTextArea(line);
+            aGUI.setSecondText(linetwo);
             line_set_event.clear();
 
         }
     }
-    private static void monitor_song(SpotifyApi spotifyApi, JLabel textArea, JLabel secondText) {
+    private static void monitor_song(SpotifyApi spotifyApi, GUI aGUI) {
         String current_track_id = null;
         while(true){
             try {
-                getCurrentlyPlayingTrack(spotifyApi, textArea, secondText);
+                getCurrentlyPlayingTrack(spotifyApi, aGUI);
                 if(track_id !=null && !track_id.equals("None") && !track_id.equals(current_track_id)){
                     current_track_id = track_id;
                     song_change_event.set();
@@ -346,7 +350,7 @@ public class LyricaL {
         }
     }
 
-    private static void getCurrentlyPlayingTrack(SpotifyApi spotifyApi, JLabel textArea, JLabel secondText) {
+    private static void getCurrentlyPlayingTrack(SpotifyApi spotifyApi, GUI aGUI) {
         try {
             CurrentlyPlaying currentlyPlaying = spotifyApi.getUsersCurrentlyPlayingTrack()
                     .build()
@@ -367,7 +371,7 @@ public class LyricaL {
                 current_progress = progress_min*60+progress_sec;
                 System.out.println("Currently playing: " + trackName + " by " + artistName);
                 //JOptionPane.showMessageDialog(null, "Currently playing: " + trackName + " by " + artistName);
-                textArea.setText("Currently playing: " + trackName + " by " + artistName);
+                aGUI.setTextArea("Currently playing: " + trackName + " by " + artistName);
             } else {
                 System.out.println("Currently playing item is not a track.");
                 artist = "None";
@@ -375,8 +379,8 @@ public class LyricaL {
                 track_id = "None";
                 current_progress = 0;
                 //JOptionPane.showMessageDialog(null, "Currently playing item is not a track.");
-                textArea.setText("Currently playing item is not a track.");
-                secondText.setText("");
+                aGUI.setTextArea("Currently playing item is not a track.");
+                aGUI.setSecondText("");
             }
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             e.printStackTrace();
