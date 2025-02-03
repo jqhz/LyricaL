@@ -4,7 +4,7 @@ import socket
 
 class Synced_Lyrics(object):
     def lyrics_search(self,track_name,artist):
-        lyrics = syncedlyrics.search(track_name + " " + artist,enhanced=True)
+        lyrics = syncedlyrics.search(track_name + " " + artist,synced_only=True)
         if lyrics:
             return lyrics
         else:
@@ -21,15 +21,17 @@ java_port = get_available_port()
 python_port=0
 lyrics_fetcher = Synced_Lyrics()
 gateway = ClientServer(
-    java_parameters=JavaParameters(port=java_port),
-    python_parameters=PythonParameters(port=python_port),
+    java_parameters=JavaParameters(port=0),
+    python_parameters=PythonParameters(port=0),
     python_server_entry_point=lyrics_fetcher
 )
 java_port = gateway.java_parameters.address[1]
 python_port = gateway.python_parameters.address[1]
-'''try:
-    gateway.start()
+print(java_port + " " + python_port)
+try:
+    #gateway = gateway.launch_gateway(die_on_exit=True)
+    gateway.start_callback_server()
 except KeyboardInterrupt:
     print("SHUTDOWN")
 finally:
-    gateway.shutdown()'''
+    gateway.shutdown()

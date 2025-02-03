@@ -5,29 +5,95 @@ import java.awt.*;
 import javax.swing.JMenu;
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 //import javax.swing.border.Border;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.table.*;
+import java.util.prefs.Preferences;
 
-import org.w3c.dom.Text;
+//import org.w3c.dom.Text;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+
+import javax.swing.AbstractAction;
+import javax.swing.AbstractCellEditor;
+import javax.swing.ActionMap;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import LyricaL.LyricaL;
 
 public class GUI {
+    private static final Preferences prefs = Preferences.userRoot().node("lyrical");
     private JFrame frame;
     private JLabel textArea;
     private JLabel secondText;
+    static class KeySelectorEditor extends AbstractCellEditor implements TableCellEditor {
+        private JTextField textField = new JTextField();
+
+        public KeySelectorEditor() {
+            textField.addKeyListener(new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                    // Set the key pressed as text
+                    textField.setText(KeyEvent.getKeyText(e.getKeyCode()));
+                    stopCellEditing();
+                }
+            });
+        }
+        
+        @Override
+        public Object getCellEditorValue() {
+            return textField.getText();
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            textField.setText(value != null ? value.toString() : "");
+            return textField;
+        }
+    }
+    private static void saveHotkey(String action, String key) {
+        prefs.put(action, key);
+    }
+
+    private static String loadHotkey(String action) {
+        return prefs.get(action, "");
+    }
+
+    private static void removeHotkey(String action) {
+        prefs.remove(action);
+    }
+    public static void bindHotkey(JFrame frame, String actionName, Runnable action) {
+        String key = loadHotkey(actionName);
+        if (key != null && !key.isEmpty()) {
+            InputMap inputMap = frame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            ActionMap actionMap = frame.getRootPane().getActionMap();
+
+            KeyStroke keyStroke = KeyStroke.getKeyStroke(key);
+            if (keyStroke != null) {
+                inputMap.put(keyStroke, actionName);
+                actionMap.put(actionName, new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        action.run();
+                    }
+                });
+            }
+        }
+    }
     public void Init_GUI() {
         FlatDarkLaf.setup();
         frame = new JFrame("LyricaL");
+        JFrame settingsFrame = new JFrame("Settings");
         frame.setUndecorated(true);
         frame.setBackground(new Color(0, 0, 0, 0));
 
@@ -39,9 +105,9 @@ public class GUI {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Options",new JPanel());
         tabbedPane.addTab("Themes",new JPanel());
-        tabbedPane.addTab("Keybinds",new JPanel());
+        tabbedPane.addTab("Keybinds",createHotkeysPanel(settingsFrame));
         tabbedPane.addTab("Language",new JPanel());
-        String[] columnNames = {"Action","Hotkey"};
+        /*String[] columnNames = {"Action","Hotkey"};
         Object[][] data = {
             {"Toggle Window UI",""},
             {"Toggle window visibility",""},
@@ -50,7 +116,13 @@ public class GUI {
         };
         DefaultTableModel model = new DefaultTableModel(data,columnNames);
         JTable table = new JTable(model);
-        
+        table.getColumnModel().getColumn(1).setCellEditor(new KeySelectorEditor());
+        JScrollPane scrollPane = new JScrollPane(table);
+        JPanel settingsPanel = new JPanel();
+        settingsPanel.setLayout(new BoxLayout(settingsPanel,BoxLayout.Y_AXIS));
+        settingsPanel.add(scrollPane);*/
+        //bindHotkey(settingsFrame, "Minimize Window");
+        bindHotkey(frame, "Toggle window visibility", () -> frame.setState(Frame.ICONIFIED));
         JPanel contentPanel = new JPanel();
         //contentPanel.setOpaque(false);
         contentPanel.setLayout(new BoxLayout(contentPanel,BoxLayout.Y_AXIS));
@@ -92,7 +164,7 @@ public class GUI {
         });
         JLabel settingsLabel = new JLabel(settingsIcon);
         settingsLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        JFrame settingsFrame = new JFrame("Settings");
+        
         settingsFrame.setSize(400,300);
         settingsFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         settingsFrame.setLayout(new BorderLayout());
@@ -163,6 +235,35 @@ public class GUI {
         frame.setVisible(true);
         
     }
+    private static JPanel createHotkeysPanel(JFrame frame){
+        String[] columnNames = {"Action","Hotkey"};
+        Object[][] data = {
+            {"Toggle Window UI",loadHotkey("Toggle Window UI")},
+            {"Toggle window visibility",loadHotkey("Toggle window visibility")},
+            {"Lock",loadHotkey("Lock")},
+            {"Toggle Transparency",loadHotkey("Toggle Transparency")}
+        };
+        DefaultTableModel model = new DefaultTableModel(data,columnNames);
+        JTable table = new JTable(model);
+        table.getColumnModel().getColumn(1).setCellEditor(new KeySelectorEditor());
+        table.getModel().addTableModelListener(e-> {
+            int row = e.getFirstRow();
+            int col = e.getColumn();
+            if(col ==1){
+                String actionName = (String) table.getValueAt(row, 0);
+                String key = (String) table.getValueAt(row, 1);
+                if(key != null && !key.isEmpty()){
+                    saveHotkey(actionName, key);
+                }
+            }
+        });
+        JScrollPane scrollPane = new JScrollPane(table);
+        JPanel settingsPanel = new JPanel();
+        settingsPanel.setLayout(new BoxLayout(settingsPanel,BoxLayout.Y_AXIS));
+        settingsPanel.add(scrollPane);
+        return settingsPanel;
+    }
+
     public JLabel getTextArea(){
         return textArea;
     }
