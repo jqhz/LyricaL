@@ -257,7 +257,7 @@ public class LyricaL {
                 String rawLine = matcher.group(2);  // The line with words between timestamps
 
                 // Extract words from the line (after the < > tags)
-                String wordPattern = "<\\d{2}:\\d{2}\\.\\d{2}>\\s*([\\w',?!.]+)";
+                String wordPattern = "<\\d{2}:\\d{2}\\.\\d{2}>\\s*([\\p{L}\\p{N}',?!.]+)";;
                 Pattern wordPatternObj = Pattern.compile(wordPattern);
                 Matcher wordMatcher = wordPatternObj.matcher(rawLine);
                 StringBuilder sb = new StringBuilder();
