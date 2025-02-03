@@ -114,7 +114,7 @@ public class GUI {
         textArea = new JLabel();
         //frame.add(textArea);
         //textArea.setEditable(false);
-        textArea.setFont(new Font("Univers",Font.BOLD,16));
+        textArea.setFont(new Font("Univers Unicode MS",Font.BOLD,16));
         textArea.setHorizontalAlignment(SwingConstants.CENTER);
         //textArea.setVerticalAlignment(SwingConstants.CENTER);
         textArea.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -125,7 +125,7 @@ public class GUI {
         secondText = new JLabel();
         secondText.setHorizontalAlignment(SwingConstants.CENTER);
         secondText.setAlignmentX(Component.CENTER_ALIGNMENT);
-        secondText.setFont(new Font("Univers",Font.BOLD,16));
+        secondText.setFont(new Font("Univers Unicode MS",Font.BOLD,16));
 
         contentPanel.add(secondText);
         contentPanel.add(Box.createVerticalGlue());

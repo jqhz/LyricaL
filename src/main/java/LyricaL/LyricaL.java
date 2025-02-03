@@ -185,6 +185,7 @@ public class LyricaL {
             line_set_event.waitEvent();
             aGUI.setTextArea(line);
             aGUI.setSecondText(linetwo);
+            //System.out.println(current_progress);
             line_set_event.clear();
 
         }
@@ -249,7 +250,7 @@ public class LyricaL {
             String linePattern = "\\[(\\d{2}:\\d{2}\\.\\d{2})](.*)";
             Pattern pattern = Pattern.compile(linePattern);
             Matcher matcher = pattern.matcher(lyrics);
-
+            System.out.println(lyrics);
             // Iterate through each match
             while (matcher.find()) {
                 String mainTimestamp = matcher.group(1);
