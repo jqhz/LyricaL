@@ -203,11 +203,8 @@ public class LyricaL {
             } catch (Exception e) {
                 System.out.println("There was an error in getting song information.");
                 e.printStackTrace();
-            }
-            
+            }   
         }
-        
-
     }
 
     private static void update_display() {
