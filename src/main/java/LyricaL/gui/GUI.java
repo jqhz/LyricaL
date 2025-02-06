@@ -12,6 +12,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
+import com.github.kwhat.jnativehook.GlobalScreen;
+import com.github.kwhat.jnativehook.NativeHookException;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 //import javax.swing.border.Border;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -90,7 +94,7 @@ public class GUI {
             }
         }
     }
-    public void Init_GUI() {
+    public void frame_gui(){
         FlatDarkLaf.setup();
         frame = new JFrame("LyricaL");
         JFrame settingsFrame = new JFrame("Settings");
@@ -107,22 +111,6 @@ public class GUI {
         tabbedPane.addTab("Themes",new JPanel());
         tabbedPane.addTab("Keybinds",createHotkeysPanel(settingsFrame));
         tabbedPane.addTab("Language",new JPanel());
-        /*String[] columnNames = {"Action","Hotkey"};
-        Object[][] data = {
-            {"Toggle Window UI",""},
-            {"Toggle window visibility",""},
-            {"Lock",""},
-            {"Toggle Transparency",""}
-        };
-        DefaultTableModel model = new DefaultTableModel(data,columnNames);
-        JTable table = new JTable(model);
-        table.getColumnModel().getColumn(1).setCellEditor(new KeySelectorEditor());
-        JScrollPane scrollPane = new JScrollPane(table);
-        JPanel settingsPanel = new JPanel();
-        settingsPanel.setLayout(new BoxLayout(settingsPanel,BoxLayout.Y_AXIS));
-        settingsPanel.add(scrollPane);*/
-        //bindHotkey(settingsFrame, "Minimize Window");
-        bindHotkey(frame, "Toggle window visibility", () -> frame.setState(Frame.ICONIFIED));
         JPanel contentPanel = new JPanel();
         //contentPanel.setOpaque(false);
         contentPanel.setLayout(new BoxLayout(contentPanel,BoxLayout.Y_AXIS));
@@ -133,9 +121,6 @@ public class GUI {
         URL minimizeIconURL = LyricaL.class.getResource("/minimize_icon.png");
         URL closeIconURL = LyricaL.class.getResource("/exit_icon.png");
         URL settingsIconURL = LyricaL.class.getResource("/settings_icon.png");
-        //System.out.println(minimizeIconURL);
-        //System.out.println(closeIconURL);
-        
         if (minimizeIconURL == null || closeIconURL == null) {
             System.err.println("Resource files not found. Ensure minimize_icon.png and exit_icon.png are in the correct directory.");
             System.exit(1);
@@ -182,7 +167,6 @@ public class GUI {
         titleBar.add(settingsLabel);
         titleBar.add(minimizeLabel);
         titleBar.add(closeLabel);
-        
         textArea = new JLabel();
         //frame.add(textArea);
         //textArea.setEditable(false);
@@ -233,6 +217,39 @@ public class GUI {
         frame.add(contentPanel,BorderLayout.CENTER);
         //frame.getContentPane().add(scrollPane, BorderLayout.CENTER); // Add scrollPane to center
         frame.setVisible(true);
+    }
+
+
+    public void settings_gui(){
+
+    }
+    public void Init_GUI() {
+        frame_gui();
+        /*String[] columnNames = {"Action","Hotkey"};
+        Object[][] data = {
+            {"Toggle Window UI",""},
+            {"Toggle window visibility",""},
+            {"Lock",""},
+            {"Toggle Transparency",""}
+        };
+        DefaultTableModel model = new DefaultTableModel(data,columnNames);
+        JTable table = new JTable(model);
+        table.getColumnModel().getColumn(1).setCellEditor(new KeySelectorEditor());
+        JScrollPane scrollPane = new JScrollPane(table);
+        JPanel settingsPanel = new JPanel();
+        settingsPanel.setLayout(new BoxLayout(settingsPanel,BoxLayout.Y_AXIS));
+        settingsPanel.add(scrollPane);*/
+        //bindHotkey(settingsFrame, "Minimize Window");
+        bindHotkey(frame, "Toggle window visibility", () -> frame.setState(Frame.ICONIFIED));
+        
+        //System.out.println(minimizeIconURL);
+        //System.out.println(closeIconURL);
+        
+        
+        
+        
+        
+        
         
     }
     private static JPanel createHotkeysPanel(JFrame frame){
