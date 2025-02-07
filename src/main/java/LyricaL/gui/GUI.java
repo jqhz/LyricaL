@@ -9,6 +9,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
@@ -33,6 +34,8 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.ActionMap;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+
 import LyricaL.LyricaL;
 
 public class GUI {
@@ -98,6 +101,7 @@ public class GUI {
         FlatDarkLaf.setup();
         frame = new JFrame("LyricaL");
         JFrame settingsFrame = new JFrame("Settings");
+        JFrame optionsFrame = new JFrame("Options");
         frame.setUndecorated(true);
         frame.setBackground(new Color(0, 0, 0, 0));
 
@@ -107,7 +111,7 @@ public class GUI {
         frame.setLayout(new BorderLayout());
         frame.setAlwaysOnTop(true);
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Options",new JPanel());
+        tabbedPane.addTab("Options",sizePanel(frame));
         tabbedPane.addTab("Themes",new JPanel());
         tabbedPane.addTab("Keybinds",createHotkeysPanel(settingsFrame));
         tabbedPane.addTab("Language",new JPanel());
@@ -218,6 +222,38 @@ public class GUI {
         //frame.getContentPane().add(scrollPane, BorderLayout.CENTER); // Add scrollPane to center
         frame.setVisible(true);
     }
+    public static JPanel sizePanel(JFrame frame) {
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); // Stack buttons vertically
+
+    // Create radio buttons for window sizes
+    JRadioButton smallButton = new JRadioButton("Small (400x300)");
+    JRadioButton mediumButton = new JRadioButton("Medium (600x400)", true); // Default selected
+    JRadioButton largeButton = new JRadioButton("Large (800x600)");
+    ButtonGroup group = new ButtonGroup();
+    group.add(smallButton);
+    group.add(mediumButton);
+    group.add(largeButton);
+    ActionListener sizeListener = e -> {
+        if (smallButton.isSelected()) {
+            frame.setSize(400, 300);
+        } else if (mediumButton.isSelected()) {
+            frame.setSize(600, 400);
+        } else if (largeButton.isSelected()) {
+            frame.setSize(800, 600);
+        }
+    };
+    smallButton.addActionListener(sizeListener);
+    mediumButton.addActionListener(sizeListener);
+    largeButton.addActionListener(sizeListener);
+
+    panel.add(smallButton);
+    panel.add(mediumButton);
+    panel.add(largeButton);
+
+    return panel;
+}
+
 
 
     public void settings_gui(){
