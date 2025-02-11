@@ -361,7 +361,7 @@ public class GUI {
                 break;
             default:
                 newColor=Color.LIGHT_GRAY;
-                textColor = Color.BLACK;
+                textColor = Color.DARK_GRAY;
                 break;
         }
         frame.getContentPane().setBackground(newColor);
