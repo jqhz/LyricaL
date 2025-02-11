@@ -6,6 +6,7 @@ import javax.swing.JMenu;
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -112,7 +113,7 @@ public class GUI {
         frame.setAlwaysOnTop(true);
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Options",sizePanel(frame));
-        tabbedPane.addTab("Themes",new JPanel());
+        tabbedPane.addTab("Themes",createThemePanel(frame));
         tabbedPane.addTab("Keybinds",createHotkeysPanel(settingsFrame));
         tabbedPane.addTab("Language",new JPanel());
         JPanel contentPanel = new JPanel();
@@ -223,36 +224,36 @@ public class GUI {
         frame.setVisible(true);
     }
     public static JPanel sizePanel(JFrame frame) {
-    JPanel panel = new JPanel();
-    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); // Stack buttons vertically
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); // Stack buttons vertically
 
-    // Create radio buttons for window sizes
-    JRadioButton smallButton = new JRadioButton("Small (400x300)");
-    JRadioButton mediumButton = new JRadioButton("Medium (600x400)", true); // Default selected
-    JRadioButton largeButton = new JRadioButton("Large (800x600)");
-    ButtonGroup group = new ButtonGroup();
-    group.add(smallButton);
-    group.add(mediumButton);
-    group.add(largeButton);
-    ActionListener sizeListener = e -> {
-        if (smallButton.isSelected()) {
-            frame.setSize(400, 300);
-        } else if (mediumButton.isSelected()) {
-            frame.setSize(600, 400);
-        } else if (largeButton.isSelected()) {
-            frame.setSize(800, 600);
-        }
-    };
-    smallButton.addActionListener(sizeListener);
-    mediumButton.addActionListener(sizeListener);
-    largeButton.addActionListener(sizeListener);
+        // Create radio buttons for window sizes
+        JRadioButton smallButton = new JRadioButton("Small (400x300)");
+        JRadioButton mediumButton = new JRadioButton("Medium (600x400)", true); // Default selected
+        JRadioButton largeButton = new JRadioButton("Large (800x600)");
+        ButtonGroup group = new ButtonGroup();
+        group.add(smallButton);
+        group.add(mediumButton);
+        group.add(largeButton);
+        ActionListener sizeListener = e -> {
+            if (smallButton.isSelected()) {
+                frame.setSize(400, 300);
+            } else if (mediumButton.isSelected()) {
+                frame.setSize(600, 400);
+            } else if (largeButton.isSelected()) {
+                frame.setSize(800, 600);
+            }
+        };
+        smallButton.addActionListener(sizeListener);
+        mediumButton.addActionListener(sizeListener);
+        largeButton.addActionListener(sizeListener);
 
-    panel.add(smallButton);
-    panel.add(mediumButton);
-    panel.add(largeButton);
+        panel.add(smallButton);
+        panel.add(mediumButton);
+        panel.add(largeButton);
 
-    return panel;
-}
+        return panel;
+    }
 
 
 
@@ -316,7 +317,49 @@ public class GUI {
         settingsPanel.add(scrollPane);
         return settingsPanel;
     }
+    public static JPanel createThemePanel(JFrame frame){
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(2, 2, 10, 10)); // Grid layout for buttons
 
+        JLabel label = new JLabel("Select Theme:");
+        panel.add(label);
+
+        JButton lightButton = new JButton("Light");
+        JButton darkButton = new JButton("Dark");
+        JButton blueButton = new JButton("Blue");
+
+        // Load saved theme from registry
+        //String savedTheme = prefs.get(PREF_THEME, "Light");
+        //applyTheme(frame, savedTheme);
+
+        // Button actions
+        lightButton.addActionListener(e -> changeTheme(frame, "Light"));
+        darkButton.addActionListener(e -> changeTheme(frame, "Dark"));
+        blueButton.addActionListener(e -> changeTheme(frame, "Blue"));
+
+        // Add buttons
+        panel.add(lightButton);
+        panel.add(darkButton);
+        panel.add(blueButton);
+        return panel;
+    }
+    private static void changeTheme(JFrame frame, String theme){
+        applyTheme(frame,theme);
+
+    }
+    private static void applyTheme(JFrame frame, String theme) {
+        switch (theme) {
+            case "Dark":
+                frame.getContentPane().setBackground(Color.DARK_GRAY);
+                break;
+            case "Blue":
+                frame.getContentPane().setBackground(new Color(70, 130, 180)); // SteelBlue
+                break;
+            default:
+                frame.getContentPane().setBackground(Color.LIGHT_GRAY);
+                break;
+        }
+    }
     public JLabel getTextArea(){
         return textArea;
     }
