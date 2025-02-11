@@ -104,7 +104,7 @@ public class GUI {
         JFrame settingsFrame = new JFrame("Settings");
         JFrame optionsFrame = new JFrame("Options");
         frame.setUndecorated(true);
-        frame.setBackground(new Color(0, 0, 0, 0));
+        //frame.setBackground(new Color(0, 0, 0, 0));
 
         frame.setOpacity(0.8f);
         frame.setSize(400, 300);
@@ -349,18 +349,40 @@ public class GUI {
     }
     private static void applyTheme(JFrame frame, String theme) {
         Color newColor;
+        Color textColor;
         switch (theme) {
             case "Dark":
                 newColor =Color.DARK_GRAY;
+                textColor = Color.WHITE;
                 break;
             case "Blue":
                 newColor = new Color(70, 130, 180); // SteelBlue
+                textColor = Color.WHITE;
                 break;
             default:
                 newColor=Color.LIGHT_GRAY;
+                textColor = Color.DARK_GRAY;
                 break;
         }
         frame.getContentPane().setBackground(newColor);
+
+        // Ensure the tabbed pane and child components update
+        for (Component c : frame.getContentPane().getComponents()) {
+            c.setBackground(newColor);
+            c.setForeground(textColor);
+            
+            if (c instanceof JPanel) {
+                for (Component subC : ((JPanel) c).getComponents()) {
+                    subC.setBackground(newColor);
+                    subC.setForeground(textColor);
+                }
+            }
+        }
+        for (Component tab : ((JTabbedPane) frame.getContentPane().getComponent(0)).getComponents()) {
+            tab.setForeground(textColor);
+            tab.setBackground(newColor);
+        }
+
         frame.repaint();
     }
     public JLabel getTextArea(){
