@@ -348,17 +348,20 @@ public class GUI {
 
     }
     private static void applyTheme(JFrame frame, String theme) {
+        Color newColor;
         switch (theme) {
             case "Dark":
-                frame.getContentPane().setBackground(Color.DARK_GRAY);
+                newColor =Color.DARK_GRAY;
                 break;
             case "Blue":
-                frame.getContentPane().setBackground(new Color(70, 130, 180)); // SteelBlue
+                newColor = new Color(70, 130, 180); // SteelBlue
                 break;
             default:
-                frame.getContentPane().setBackground(Color.LIGHT_GRAY);
+                newColor=Color.LIGHT_GRAY;
                 break;
         }
+        frame.getContentPane().setBackground(newColor);
+        frame.repaint();
     }
     public JLabel getTextArea(){
         return textArea;
