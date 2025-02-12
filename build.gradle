@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 repositories {
@@ -13,8 +14,10 @@ dependencies {
     implementation 'se.michaelthelin.spotify:spotify-web-api-java:9.1.1'
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.1'
     implementation 'org.apache.httpcomponents.core5:httpcore5:5.3.1'
-    implementation 'net.sf.py4j:py4j:0.10.9.9'
+    implementation 'black.ninia:jep:4.2.2'
     implementation 'com.github.kwhat:jnativehook:2.2.2' 
-    implementation 'org.openjfx:javafx:11'
+    implementation 'org.openjfx:javafx-controls:21'
+    implementation 'org.openjfx:javafx-web:21'
+    
 
 }

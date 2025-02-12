@@ -39,9 +39,11 @@ import se.michaelthelin.spotify.model_objects.specification.Track;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import py4j.ClientServer;
-import py4j.Py4JException;
-
+//import py4j.ClientServer;
+//import py4j.Py4JException;
+import jep.MainInterpreter;
+import jep.Interpreter;
+import jep.SharedInterpreter;
 import java.awt.event.*;
 import java.net.URL;
 
@@ -98,6 +100,10 @@ class Event {
     }
 }
 public class LyricaL {
+    static{
+        System.setProperty("java.library.path","C:/Users/fhu86/AppData/Local/Programs/Python/Python312/Lib/site-packages/jep");
+        MainInterpreter.setJepLibraryPath("C:/Users/fhu86/AppData/Local/Programs/Python/Python312/Lib/site-packages/jep/jep.dll");
+    }
     public static GUI guiyay;
     private static final String TOKEN_FILE = "spotify_tokens.txt";
     public static String track_id, artist, song_title, line,linetwo = "";
@@ -105,8 +111,8 @@ public class LyricaL {
     public static Event song_change_event = new Event();
     public static Event line_set_event = new Event();
     public static Event lyrics_fetch_event = new Event();
-    public static ClientServer clientServer = new ClientServer(null);
-    public static final Synced_Lyrics fetcher = (Synced_Lyrics) clientServer.getPythonServerEntryPoint(new Class[] { Synced_Lyrics.class });
+    //public static ClientServer clientServer = new ClientServer(null);
+    //public static final Synced_Lyrics fetcher = (Synced_Lyrics) clientServer.getPythonServerEntryPoint(new Class[] { Synced_Lyrics.class });
     public static class TimeStampedLine{
         double timestamp;
         String lyricsa;
@@ -167,7 +173,7 @@ public class LyricaL {
                 }
             });
             thread3.start();
-            ProcessBuilder processBuilder = new ProcessBuilder("py","lyrics_server.py");
+            /*ProcessBuilder processBuilder = new ProcessBuilder("py","lyrics_server.py");
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -175,7 +181,7 @@ public class LyricaL {
             while ((linez = reader.readLine()) != null) {
                 System.out.println(linez);
             }
-            //process.waitFor();
+            //process.waitFor();*/
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             e.printStackTrace();
         }
@@ -239,8 +245,15 @@ public class LyricaL {
         lines.clear();
         System.out.println("HELLO I CHANGED SONGS YYIPEEEEEEE");
         
-        try{
-            String lyrics = fetcher.lyrics_search(song_title,artist);
+        try(Interpreter interp = new SharedInterpreter()){
+            //String lyrics = fetcher.lyrics_search(song_title,artist);
+            interp.set("song_title",song_title);
+            interp.set("artist",artist);
+            interp.exec("import syncedlyrics");
+            interp.exec("lyrics = syncedlyrics.search(f'{song_title} {artist}',synced_only=True)");
+            //lyrics = 
+            String lyrics = interp.getValue("lyrics",String.class);
+            
             //System.out.println(lyrics);
             //System.out.println();
             
@@ -285,7 +298,7 @@ public class LyricaL {
             /*for (TimeStampedLine linez : lines) {
                 System.out.println(linez);
             }*/
-        }catch (Py4JException e){
+        }catch (Exception e){
             e.printStackTrace();
         } finally {
             lyrics_fetch_event.clear();
