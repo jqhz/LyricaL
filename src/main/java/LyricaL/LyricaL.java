@@ -104,6 +104,10 @@ public class LyricaL {
         System.setProperty("java.library.path","C:/Users/fhu86/AppData/Local/Programs/Python/Python312/Lib/site-packages/jep");
         MainInterpreter.setJepLibraryPath("C:/Users/fhu86/AppData/Local/Programs/Python/Python312/Lib/site-packages/jep/jep.dll");
     }
+    static{
+        System.setProperty("java.library.path","C:/Users/jason/AppData/Local/Programs/Python/Python311/Lib/site-packages/jep");
+        MainInterpreter.setJepLibraryPath("C:/Users/jason/AppData/Local/Programs/Python/Python311/Lib/site-packages/jep/jep.dll");
+    }
     public static GUI guiyay;
     private static final String TOKEN_FILE = "spotify_tokens.txt";
     public static String track_id, artist, song_title, line,linetwo = "";
