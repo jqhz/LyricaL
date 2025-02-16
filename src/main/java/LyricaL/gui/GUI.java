@@ -14,6 +14,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
@@ -222,14 +224,16 @@ public class GUI {
         frame.add(contentPanel,BorderLayout.CENTER);
         //frame.getContentPane().add(scrollPane, BorderLayout.CENTER); // Add scrollPane to center
         frame.setVisible(true);
+        registerGlobalListener(); 
+
     }
     public static JPanel sizePanel(JFrame frame) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); // Stack buttons vertically
 
         // Create radio buttons for window sizes
-        JRadioButton smallButton = new JRadioButton("Small (400x300)");
-        JRadioButton mediumButton = new JRadioButton("Medium (600x400)", true); // Default selected
+        JRadioButton smallButton = new JRadioButton("Small (400x300)",true);
+        JRadioButton mediumButton = new JRadioButton("Medium (600x400)"); // Default selected
         JRadioButton largeButton = new JRadioButton("Large (800x600)");
         ButtonGroup group = new ButtonGroup();
         group.add(smallButton);
@@ -277,7 +281,7 @@ public class GUI {
         settingsPanel.setLayout(new BoxLayout(settingsPanel,BoxLayout.Y_AXIS));
         settingsPanel.add(scrollPane);*/
         //bindHotkey(settingsFrame, "Minimize Window");
-        bindHotkey(frame, "Toggle window visibility", () -> frame.setState(Frame.ICONIFIED));
+        //bindHotkey(frame, "Toggle window visibility", () -> frame.setState(Frame.ICONIFIED));
         
         //System.out.println(minimizeIconURL);
         //System.out.println(closeIconURL);
@@ -288,6 +292,30 @@ public class GUI {
         
         
         
+    }
+    private void registerGlobalListener(){
+        try{
+            GlobalScreen.registerNativeHook();
+
+        }catch(NativeHookException e){
+            e.printStackTrace();
+        }
+        //Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
+        GlobalScreen.addNativeKeyListener(new NativeKeyListener(){
+            @Override
+            public void nativeKeyPressed(NativeKeyEvent e){
+                String keyText = NativeKeyEvent.getKeyText(e.getKeyCode());
+                String minimizeKey = loadHotkey("Toggle window visibility");
+                if(keyText.equalsIgnoreCase(minimizeKey)){
+                    toggleMinimize();
+                }
+            }
+            @Override
+            public void nativeKeyReleased(NativeKeyEvent e){}
+
+            @Override
+            public void nativeKeyTyped(NativeKeyEvent e){}
+        });
     }
     private static JPanel createHotkeysPanel(JFrame frame){
         String[] columnNames = {"Action","Hotkey"};
@@ -316,6 +344,13 @@ public class GUI {
         settingsPanel.setLayout(new BoxLayout(settingsPanel,BoxLayout.Y_AXIS));
         settingsPanel.add(scrollPane);
         return settingsPanel;
+    }
+    private void toggleMinimize() {
+        if (frame.getState() == Frame.ICONIFIED) {
+            frame.setState(Frame.NORMAL);
+        } else {
+            frame.setState(Frame.ICONIFIED);
+        }
     }
     public static JPanel createThemePanel(JFrame frame){
         JPanel panel = new JPanel();

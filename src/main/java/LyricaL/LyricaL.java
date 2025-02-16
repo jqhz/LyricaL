@@ -253,8 +253,9 @@ public class LyricaL {
             //String lyrics = fetcher.lyrics_search(song_title,artist);
             interp.set("song_title",song_title);
             interp.set("artist",artist);
+            //interp.set("prov","usixmatch");
             interp.exec("import syncedlyrics");
-            interp.exec("lyrics = syncedlyrics.search(f'{song_title} {artist}',synced_only=True)");
+            interp.exec("lyrics = syncedlyrics.search(f'{song_title} {artist}',synced_only=True,providers=['Musixmatch'])");
             //lyrics = 
             String lyrics = interp.getValue("lyrics",String.class);
             
