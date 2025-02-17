@@ -103,9 +103,14 @@ public class GUI {
     public void frame_gui(){
         FlatDarkLaf.setup();
         frame = new JFrame("LyricaL");
+        URL logoURL = LyricaL.class.getResource("/logo3.png");
+        ImageIcon logo = new ImageIcon(logoURL);
+        Image resizedImage = logo.getImage().getScaledInstance(256, 256, Image.SCALE_SMOOTH);        
         JFrame settingsFrame = new JFrame("Settings");
         JFrame optionsFrame = new JFrame("Options");
         frame.setUndecorated(true);
+        frame.setIconImage(resizedImage);
+        //frame.setIconImage(logo.getImage());
         //frame.setBackground(new Color(0, 0, 0, 0));
 
         frame.setOpacity(0.8f);
