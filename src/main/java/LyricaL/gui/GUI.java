@@ -71,35 +71,9 @@ public class GUI {
             return textField;
         }
     }
-    private static void saveHotkey(String action, String key) {
-        prefs.put(action, key);
-    }
+    
 
-    private static String loadHotkey(String action) {
-        return prefs.get(action, "");
-    }
-
-    private static void removeHotkey(String action) {
-        prefs.remove(action);
-    }
-    public static void bindHotkey(JFrame frame, String actionName, Runnable action) {
-        String key = loadHotkey(actionName);
-        if (key != null && !key.isEmpty()) {
-            InputMap inputMap = frame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-            ActionMap actionMap = frame.getRootPane().getActionMap();
-
-            KeyStroke keyStroke = KeyStroke.getKeyStroke(key);
-            if (keyStroke != null) {
-                inputMap.put(keyStroke, actionName);
-                actionMap.put(actionName, new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        action.run();
-                    }
-                });
-            }
-        }
-    }
+    
     public void frame_gui(){
         FlatDarkLaf.setup();
         frame = new JFrame("LyricaL");
@@ -107,7 +81,7 @@ public class GUI {
         ImageIcon logo = new ImageIcon(logoURL);
         Image resizedImage = logo.getImage().getScaledInstance(256, 256, Image.SCALE_SMOOTH);        
         JFrame settingsFrame = new JFrame("Settings");
-        JFrame optionsFrame = new JFrame("Options");
+        //JFrame optionsFrame = new JFrame("Options");
         frame.setUndecorated(true);
         frame.setIconImage(resizedImage);
         //frame.setIconImage(logo.getImage());
@@ -119,9 +93,10 @@ public class GUI {
         frame.setLayout(new BorderLayout());
         frame.setAlwaysOnTop(true);
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Options",sizePanel(frame));
-        tabbedPane.addTab("Themes",createThemePanel(frame));
-        tabbedPane.addTab("Keybinds",createHotkeysPanel(settingsFrame));
+        tabbedPane.addTab("Options",new OptionsPanel(frame));
+        tabbedPane.addTab("Themes",new ThemePanel(frame));
+        HotkeysPanel hotkeysPanel = new HotkeysPanel(frame, tabbedPane);
+        //tabbedPane.addTab("Keybinds",new HotkeysPanel(frame));
         tabbedPane.addTab("Language",new JPanel());
         JPanel contentPanel = new JPanel();
         //contentPanel.setOpaque(false);
@@ -180,8 +155,6 @@ public class GUI {
         titleBar.add(minimizeLabel);
         titleBar.add(closeLabel);
         textArea = new JLabel();
-        //frame.add(textArea);
-        //textArea.setEditable(false);
         textArea.setFont(new Font("Univers Unicode MS",Font.BOLD,16));
         textArea.setHorizontalAlignment(SwingConstants.CENTER);
         //textArea.setVerticalAlignment(SwingConstants.CENTER);
@@ -229,201 +202,12 @@ public class GUI {
         frame.add(contentPanel,BorderLayout.CENTER);
         //frame.getContentPane().add(scrollPane, BorderLayout.CENTER); // Add scrollPane to center
         frame.setVisible(true);
-        registerGlobalListener(); 
+        
 
     }
-    public static JPanel sizePanel(JFrame frame) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); // Stack buttons vertically
 
-        // Create radio buttons for window sizes
-        JRadioButton smallButton = new JRadioButton("Small (400x300)",true);
-        JRadioButton mediumButton = new JRadioButton("Medium (600x400)"); // Default selected
-        JRadioButton largeButton = new JRadioButton("Large (800x600)");
-        ButtonGroup group = new ButtonGroup();
-        group.add(smallButton);
-        group.add(mediumButton);
-        group.add(largeButton);
-        ActionListener sizeListener = e -> {
-            if (smallButton.isSelected()) {
-                frame.setSize(400, 300);
-            } else if (mediumButton.isSelected()) {
-                frame.setSize(600, 400);
-            } else if (largeButton.isSelected()) {
-                frame.setSize(800, 600);
-            }
-        };
-        smallButton.addActionListener(sizeListener);
-        mediumButton.addActionListener(sizeListener);
-        largeButton.addActionListener(sizeListener);
-
-        panel.add(smallButton);
-        panel.add(mediumButton);
-        panel.add(largeButton);
-
-        return panel;
-    }
-
-
-
-    public void settings_gui(){
-
-    }
     public void Init_GUI() {
         frame_gui();
-        /*String[] columnNames = {"Action","Hotkey"};
-        Object[][] data = {
-            {"Toggle Window UI",""},
-            {"Toggle window visibility",""},
-            {"Lock",""},
-            {"Toggle Transparency",""}
-        };
-        DefaultTableModel model = new DefaultTableModel(data,columnNames);
-        JTable table = new JTable(model);
-        table.getColumnModel().getColumn(1).setCellEditor(new KeySelectorEditor());
-        JScrollPane scrollPane = new JScrollPane(table);
-        JPanel settingsPanel = new JPanel();
-        settingsPanel.setLayout(new BoxLayout(settingsPanel,BoxLayout.Y_AXIS));
-        settingsPanel.add(scrollPane);*/
-        //bindHotkey(settingsFrame, "Minimize Window");
-        //bindHotkey(frame, "Toggle window visibility", () -> frame.setState(Frame.ICONIFIED));
-        
-        //System.out.println(minimizeIconURL);
-        //System.out.println(closeIconURL);
-        
-        
-        
-        
-        
-        
-        
-    }
-    private void registerGlobalListener(){
-        try{
-            GlobalScreen.registerNativeHook();
-
-        }catch(NativeHookException e){
-            e.printStackTrace();
-        }
-        //Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
-        GlobalScreen.addNativeKeyListener(new NativeKeyListener(){
-            @Override
-            public void nativeKeyPressed(NativeKeyEvent e){
-                String keyText = NativeKeyEvent.getKeyText(e.getKeyCode());
-                String minimizeKey = loadHotkey("Toggle window visibility");
-                if(keyText.equalsIgnoreCase(minimizeKey)){
-                    toggleMinimize();
-                }
-            }
-            @Override
-            public void nativeKeyReleased(NativeKeyEvent e){}
-
-            @Override
-            public void nativeKeyTyped(NativeKeyEvent e){}
-        });
-    }
-    private static JPanel createHotkeysPanel(JFrame frame){
-        String[] columnNames = {"Action","Hotkey"};
-        Object[][] data = {
-            {"Toggle Window UI",loadHotkey("Toggle Window UI")},
-            {"Toggle window visibility",loadHotkey("Toggle window visibility")},
-            {"Lock",loadHotkey("Lock")},
-            {"Toggle Transparency",loadHotkey("Toggle Transparency")}
-        };
-        DefaultTableModel model = new DefaultTableModel(data,columnNames);
-        JTable table = new JTable(model);
-        table.getColumnModel().getColumn(1).setCellEditor(new KeySelectorEditor());
-        table.getModel().addTableModelListener(e-> {
-            int row = e.getFirstRow();
-            int col = e.getColumn();
-            if(col ==1){
-                String actionName = (String) table.getValueAt(row, 0);
-                String key = (String) table.getValueAt(row, 1);
-                if(key != null && !key.isEmpty()){
-                    saveHotkey(actionName, key);
-                }
-            }
-        });
-        JScrollPane scrollPane = new JScrollPane(table);
-        JPanel settingsPanel = new JPanel();
-        settingsPanel.setLayout(new BoxLayout(settingsPanel,BoxLayout.Y_AXIS));
-        settingsPanel.add(scrollPane);
-        return settingsPanel;
-    }
-    private void toggleMinimize() {
-        if (frame.getState() == Frame.ICONIFIED) {
-            frame.setState(Frame.NORMAL);
-        } else {
-            frame.setState(Frame.ICONIFIED);
-        }
-    }
-    public static JPanel createThemePanel(JFrame frame){
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(2, 2, 10, 10)); // Grid layout for buttons
-
-        JLabel label = new JLabel("Select Theme:");
-        panel.add(label);
-
-        JButton lightButton = new JButton("Light");
-        JButton darkButton = new JButton("Dark");
-        JButton blueButton = new JButton("Blue");
-
-        // Load saved theme from registry
-        //String savedTheme = prefs.get(PREF_THEME, "Light");
-        //applyTheme(frame, savedTheme);
-
-        // Button actions
-        lightButton.addActionListener(e -> changeTheme(frame, "Light"));
-        darkButton.addActionListener(e -> changeTheme(frame, "Dark"));
-        blueButton.addActionListener(e -> changeTheme(frame, "Blue"));
-
-        // Add buttons
-        panel.add(lightButton);
-        panel.add(darkButton);
-        panel.add(blueButton);
-        return panel;
-    }
-    private static void changeTheme(JFrame frame, String theme){
-        applyTheme(frame,theme);
-
-    }
-    private static void applyTheme(JFrame frame, String theme) {
-        Color newColor;
-        Color textColor;
-        switch (theme) {
-            case "Dark":
-                newColor =Color.DARK_GRAY;
-                textColor = Color.WHITE;
-                break;
-            case "Blue":
-                newColor = new Color(70, 130, 180); // SteelBlue
-                textColor = Color.WHITE;
-                break;
-            default:
-                newColor=Color.LIGHT_GRAY;
-                textColor = Color.DARK_GRAY;
-                break;
-        }
-        frame.getContentPane().setBackground(newColor);
-
-        // Ensure the tabbed pane and child components update
-        for (Component c : frame.getContentPane().getComponents()) {
-            c.setBackground(newColor);
-            c.setForeground(textColor);
-            
-            if (c instanceof JPanel) {
-                for (Component subC : ((JPanel) c).getComponents()) {
-                    subC.setBackground(newColor);
-                    subC.setForeground(textColor);
-                }
-            }
-        }
-        for (Component tab : ((JTabbedPane) frame.getContentPane().getComponent(0)).getComponents()) {
-            tab.setForeground(textColor);
-            tab.setBackground(newColor);
-        }
-
-        frame.repaint();
     }
     public JLabel getTextArea(){
         return textArea;

@@ -1,15 +1,19 @@
 package LyricaL.gui;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.GridLayout;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
-import javafx.scene.paint.Color;
+//import javafx.scene.paint.Color;
 
-public class ThemePanel {
-    public static JPanel createThemePanel(JFrame frame){
+public class ThemePanel extends JPanel {
+    public ThemePanel(JFrame frame){
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(2, 2, 10, 10)); // Grid layout for buttons
 
@@ -33,7 +37,7 @@ public class ThemePanel {
         panel.add(lightButton);
         panel.add(darkButton);
         panel.add(blueButton);
-        return panel;
+        this.add(panel);
     }
     private static void changeTheme(JFrame frame, String theme){
         applyTheme(frame,theme);
@@ -44,7 +48,7 @@ public class ThemePanel {
         Color textColor;
         switch (theme) {
             case "Dark":
-                newColor =Color.DARK_GRAY;
+                newColor = Color.DARK_GRAY;
                 textColor = Color.WHITE;
                 break;
             case "Blue":
@@ -52,13 +56,14 @@ public class ThemePanel {
                 textColor = Color.WHITE;
                 break;
             default:
-                newColor=Color.LIGHT_GRAY;
+                newColor = Color.LIGHT_GRAY;
                 textColor = Color.DARK_GRAY;
                 break;
         }
+        
         frame.getContentPane().setBackground(newColor);
 
-        // Ensure the tabbed pane and child components update
+        // Ensure all components update their colors
         for (Component c : frame.getContentPane().getComponents()) {
             c.setBackground(newColor);
             c.setForeground(textColor);
@@ -69,12 +74,15 @@ public class ThemePanel {
                     subC.setForeground(textColor);
                 }
             }
+            
+            // **Fix: Only cast to JTabbedPane if it actually is one**
+            if (c instanceof JTabbedPane) {
+                for (Component tab : ((JTabbedPane) c).getComponents()) {
+                    tab.setForeground(textColor);
+                    tab.setBackground(newColor);
+                }
+            }
         }
-        for (Component tab : ((JTabbedPane) frame.getContentPane().getComponent(0)).getComponents()) {
-            tab.setForeground(textColor);
-            tab.setBackground(newColor);
-        }
-
         frame.repaint();
     }
 }

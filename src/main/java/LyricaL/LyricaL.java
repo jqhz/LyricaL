@@ -221,9 +221,6 @@ public class LyricaL {
         }
     }
     
-    public interface Synced_Lyrics{
-        String lyrics_search(String track_name, String artist);
-    }
     private static void fetch_lyrics() throws InterruptedException {
         if(!song_change_event.isSet() || track_id.equals("None")){
             return;
@@ -243,7 +240,14 @@ public class LyricaL {
             interp.exec("lyrics = syncedlyrics.search(f'{song_title} {artist}',synced_only=True,providers=['Musixmatch'])");
             //lyrics = 
             String lyrics = interp.getValue("lyrics",String.class);
-            
+            if (lyrics==null){
+                lyrics = "No lyrics found";
+                line = "No lyrics found";
+                return;
+                //aGUI.setTextArea(line);
+            //aGUI.setSecondText(linetwo);
+            }
+                
             //System.out.println(lyrics);
             //System.out.println();
             
@@ -367,8 +371,7 @@ public class LyricaL {
                 song_title = trackName;
                 track_id = trackID;
                 current_progress = progress_min*60+progress_sec;
-                System.out.println("Currently playing: " + trackName + " by " + artistName);
-                //JOptionPane.showMessageDialog(null, "Currently playing: " + trackName + " by " + artistName);
+                //System.out.println("Currently playing: " + trackName + " by " + artistName);
                 aGUI.setTextArea("Currently playing: " + trackName + " by " + artistName);
             } else {
                 System.out.println("Currently playing item is not a track.");
@@ -376,7 +379,6 @@ public class LyricaL {
                 song_title = "None";
                 track_id = "None";
                 current_progress = 0;
-                //JOptionPane.showMessageDialog(null, "Currently playing item is not a track.");
                 aGUI.setTextArea("Currently playing item is not a track.");
                 aGUI.setSecondText("");
             }
