@@ -19,4 +19,4 @@ This application will allow users to view current Spotify song lyrics on the des
 
 ## History
 
-LyricaL was first created in December 2024, having its orgins built in Python using a Tkinter window with similar threading and asynchronous functions for similar behavior. This implementation took it one-step further with Java Swing components to improve everything from looks to functionality.
+LyricaL was first created in December 2024, having its [prototype](https://github.com/jqhz/LyricaL-py) built in Python using a Tkinter window with similar threading and asynchronous functions for similar behavior. This implementation took it one-step further with Java Swing components to improve everything from looks to functionality.
