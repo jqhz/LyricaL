@@ -27,7 +27,7 @@ public class ThemePanel extends JPanel {
         // Load saved theme from registry
         //String savedTheme = prefs.get(PREF_THEME, "Light");
         //applyTheme(frame, savedTheme);
-
+        //ught ill do this later
         // Button actions
         lightButton.addActionListener(e -> changeTheme(frame, "Light"));
         darkButton.addActionListener(e -> changeTheme(frame, "Dark"));
