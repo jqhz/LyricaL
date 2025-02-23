@@ -1,6 +1,7 @@
 # LyricaL
 
 This application will allow users to view current Spotify song lyrics on the desktop environment, without the need of tabbing into Spotify.
+
 ![image](https://github.com/user-attachments/assets/ebc1ea1e-1e54-40bf-afa7-74caed9f4ecb)
 
 ## Features
