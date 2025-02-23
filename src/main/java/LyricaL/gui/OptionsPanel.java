@@ -1,13 +1,15 @@
 package LyricaL.gui;
 
+import java.awt.event.ActionListener;
+
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-public class OptionsPanel {
-    public static JPanel sizePanel(JFrame frame) {
+public class OptionsPanel extends JPanel{
+    public OptionsPanel(JFrame frame) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); // Stack buttons vertically
 
@@ -35,7 +37,6 @@ public class OptionsPanel {
         panel.add(smallButton);
         panel.add(mediumButton);
         panel.add(largeButton);
-
-        return panel;
+        this.add(panel);
     }
 }

@@ -237,20 +237,16 @@ public class LyricaL {
             interp.set("artist",artist);
             //interp.set("prov","usixmatch");
             interp.exec("import syncedlyrics");
-            interp.exec("lyrics = syncedlyrics.search(f'{song_title} {artist}',synced_only=True,providers=['Musixmatch'])");
+            interp.exec("lyrics = syncedlyrics.search(f'{song_title} {artist}',synced_only=True)");
             //lyrics = 
             String lyrics = interp.getValue("lyrics",String.class);
             if (lyrics==null){
                 lyrics = "No lyrics found";
                 line = "No lyrics found";
                 return;
-                //aGUI.setTextArea(line);
-            //aGUI.setSecondText(linetwo);
+
             }
-                
-            //System.out.println(lyrics);
-            //System.out.println();
-            
+
             String linePattern = "\\[(\\d{2}:\\d{2}\\.\\d{2})](.*)";
             Pattern pattern = Pattern.compile(linePattern);
             Matcher matcher = pattern.matcher(lyrics);
